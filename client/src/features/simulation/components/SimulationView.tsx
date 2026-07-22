@@ -17,6 +17,7 @@ function getInteractionBounds(
   interaction: PrototypeInteraction,
   strokes: Stroke[],
 ) {
+  // La zone cliquable est la boîte qui englobe tous les traits liés.
   const linkedStrokes = strokes.filter((stroke) =>
     interaction.contentIds.includes(stroke.id),
   );
@@ -67,6 +68,7 @@ export function SimulationView({ open, onClose }: SimulationViewProps) {
   useEffect(() => {
     if (!open) return;
 
+    // Une nouvelle simulation repart toujours de la première fenêtre.
     setCurrentWindowId(windows[0]?.id ?? '');
     setHistory([]);
     setHoveredInteractionId(null);
@@ -91,6 +93,7 @@ export function SimulationView({ open, onClose }: SimulationViewProps) {
       );
     };
 
+    // Même logique responsive que l'éditeur, sans modifier les données.
     const observer = new ResizeObserver(updateScale);
     observer.observe(workspace);
     updateScale();
@@ -107,6 +110,7 @@ export function SimulationView({ open, onClose }: SimulationViewProps) {
   };
 
   const activateInteraction = (interaction: PrototypeInteraction) => {
+    // Les boutons naviguent dans le prototype; les liens ouvrent le Web.
     if (interaction.type === 'button' && interaction.targetWindowId) {
       navigateTo(interaction.targetWindowId);
       return;
@@ -132,6 +136,7 @@ export function SimulationView({ open, onClose }: SimulationViewProps) {
     if (container) container.style.cursor = cursor;
   };
 
+  // La simulation couvre tout l'éditeur sans dépendre de sa grille CSS.
   return createPortal(
     <div className="simulation-overlay" role="dialog" aria-modal="true">
       <header className="simulation-header">

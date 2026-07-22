@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { DrawingCanvas } from './features/canvas/components/DrawingCanvas';
 import { PencilControls } from './features/canvas/components/PencilControls';
 import { EditorHeader } from './components/EditorHeader';
@@ -18,6 +19,7 @@ export default function App() {
       <ToolRail />
       <WindowsPanel />
       <DrawingCanvas />
+      {/* La barre contextuelle dépend de l'outil actif. */}
       {activeTool === 'pencil' ? <PencilControls /> : <SelectionControls />}
       <SimulationView
         open={simulationOpen}
@@ -26,4 +28,3 @@ export default function App() {
     </div>
   );
 }
-import { useState } from 'react';

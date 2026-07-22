@@ -3,6 +3,7 @@ import type { KonvaEventObject } from 'konva/lib/Node';
 import { useEditorStore } from '../../../store/useEditorStore';
 
 export function usePencilDrawing(scale: number) {
+  // Ces références décrivent le geste en cours sans provoquer un rendu React.
   const activeStrokeId = useRef<string | null>(null);
   const pointsRef = useRef<number[]>([]);
 
@@ -22,6 +23,7 @@ export function usePencilDrawing(scale: number) {
     if (!position) return null;
 
     return {
+      // Le store conserve toujours les coordonnées logiques de la page (960x640).
       x: position.x / scale,
       y: position.y / scale,
     };
@@ -35,6 +37,7 @@ export function usePencilDrawing(scale: number) {
     if (!point) return;
 
     const id = crypto.randomUUID();
+    // Deux points presque identiques permettent aussi d'afficher un simple clic.
     const points = [point.x, point.y, point.x + 0.01, point.y + 0.01];
 
     activeStrokeId.current = id;
@@ -61,6 +64,7 @@ export function usePencilDrawing(scale: number) {
     const previousY = pointsRef.current.at(-1) ?? point.y;
     const distance = Math.hypot(point.x - previousX, point.y - previousY);
 
+    // Ignore les micro-mouvements pour limiter la taille des tracés.
     if (distance < 0.8) return;
 
     pointsRef.current = [...pointsRef.current, point.x, point.y];

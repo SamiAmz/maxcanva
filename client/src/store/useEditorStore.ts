@@ -12,6 +12,7 @@ const INITIAL_WINDOW: PrototypeWindow = {
   name: 'Fenêtre 1',
 };
 
+// Source de vérité partagée par l'éditeur, les miniatures et la simulation.
 interface EditorState {
   activeTool: Tool;
   pencilColor: string;
@@ -55,6 +56,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   setActiveTool: (activeTool) =>
     set((state) => ({
       activeTool,
+      // Une sélection n'est pas visible ni modifiable avec le crayon.
       selectedStrokeIds:
         activeTool === 'pencil' ? [] : state.selectedStrokeIds,
     })),
@@ -104,6 +106,7 @@ export const useEditorStore = create<EditorState>((set) => ({
 
       return {
         strokes: state.strokes.filter((stroke) => !selectedIds.has(stroke.id)),
+        // Évite de conserver des interactions qui référencent des traits supprimés.
         interactions: state.interactions
           .map((interaction) => ({
             ...interaction,
@@ -121,6 +124,7 @@ export const useEditorStore = create<EditorState>((set) => ({
         ids.includes(stroke.id)
           ? {
               ...stroke,
+              // Les indices pairs sont des x et les indices impairs des y.
               points: stroke.points.map((point, index) =>
                 point + (index % 2 === 0 ? x : y),
               ),
@@ -131,6 +135,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   saveInteraction: (newInteraction) =>
     set((state) => {
       const selectedIds = new Set(newInteraction.contentIds);
+      // Un trait ne peut appartenir qu'à une seule interaction à la fois.
       const remainingInteractions = state.interactions
         .map((interaction) => ({
           ...interaction,

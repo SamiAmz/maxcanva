@@ -3,6 +3,7 @@ import type { Stroke } from '../../../types/drawing';
 
 const THUMBNAIL_WIDTH = 164;
 const THUMBNAIL_HEIGHT = 110;
+// Les miniatures réutilisent les coordonnées 960x640 à une échelle réduite.
 const SCALE = THUMBNAIL_WIDTH / 960;
 
 interface WindowThumbnailProps {

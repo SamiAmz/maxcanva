@@ -19,6 +19,7 @@ export function InteractionOverlay({
   );
   if (linkedStrokes.length === 0) return null;
 
+  // Une seule boîte englobe tous les traits qui composent l'interaction.
   const xs = linkedStrokes.flatMap((stroke) =>
     stroke.points.filter((_, index) => index % 2 === 0),
   );

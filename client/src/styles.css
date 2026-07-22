@@ -29,6 +29,7 @@ button {
   color: inherit;
 }
 
+/* Structure générale de l'éditeur */
 .editor-shell {
   display: grid;
   grid-template-columns: 76px 220px minmax(0, 1fr);
@@ -111,6 +112,7 @@ button {
   background: #5b5bd6;
 }
 
+/* Navigation principale et choix des outils */
 .header-actions {
   display: flex;
   align-items: center;
@@ -195,6 +197,7 @@ button {
   font-weight: 700;
 }
 
+/* Liste et miniatures des fenêtres */
 .windows-panel {
   z-index: 4;
   grid-column: 2;
@@ -360,6 +363,7 @@ button {
   font-size: 9px;
 }
 
+/* Surface de dessin Konva */
 .canvas-workspace {
   position: relative;
   grid-column: 3;
@@ -415,6 +419,7 @@ button {
   font-size: 21px;
 }
 
+/* Barres contextuelles du crayon et de la sélection */
 .pencil-controls {
   position: fixed;
   z-index: 20;
@@ -516,6 +521,7 @@ button {
   cursor: not-allowed;
 }
 
+/* Configuration d'un bouton ou d'un hyperlien */
 .dialog-backdrop {
   position: fixed;
   z-index: 100;
@@ -710,6 +716,7 @@ button {
   cursor: pointer;
 }
 
+/* Mode plein écran pour tester le prototype */
 .simulation-overlay {
   position: fixed;
   z-index: 200;
@@ -995,6 +1002,7 @@ button:focus-visible,
   outline-offset: 2px;
 }
 
+/* Adaptation tablette et mobile */
 @media (max-width: 900px) {
   .editor-shell {
     grid-template-columns: 60px minmax(0, 1fr);

@@ -8,6 +8,7 @@ interface InteractionDialogProps {
   onClose: () => void;
 }
 
+// Accepte "exemple.com", ajoute HTTPS et refuse les protocoles non web.
 function normalizeWebUrl(value: string) {
   const trimmedValue = value.trim();
   if (!trimmedValue) return null;
@@ -38,10 +39,12 @@ export function InteractionDialog({ open, onClose }: InteractionDialogProps) {
   );
 
   const targetWindows = useMemo(
+    // Un bouton n'a pas besoin de renvoyer vers sa propre fenêtre.
     () => windows.filter((window) => window.id !== activeWindowId),
     [activeWindowId, windows],
   );
   const existingInteraction = useMemo(
+    // La même fenêtre sert à créer une interaction ou modifier l'existante.
     () =>
       interactions.find(
         (interaction) =>
@@ -96,6 +99,7 @@ export function InteractionDialog({ open, onClose }: InteractionDialogProps) {
     onClose();
   };
 
+  // Le portail évite que le modal hérite des transformations de la barre flottante.
   return createPortal(
     <div className="dialog-backdrop" onPointerDown={onClose}>
       <form

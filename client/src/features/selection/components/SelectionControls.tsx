@@ -23,6 +23,7 @@ export function SelectionControls() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Les raccourcis de l'éditeur ne doivent pas agir dans un formulaire.
       if (dialogOpen) return;
       const target = event.target as HTMLElement | null;
       if (target?.matches('input, select, textarea, button, [contenteditable="true"]')) return;

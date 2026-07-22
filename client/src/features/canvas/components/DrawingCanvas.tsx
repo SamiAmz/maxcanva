@@ -17,6 +17,7 @@ interface SelectionBox {
   additive: boolean;
 }
 
+// Surface principale: elle distribue les gestes au crayon ou à la sélection.
 export function DrawingCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -41,6 +42,7 @@ export function DrawingCanvas() {
   const getPoint = (event: KonvaEventObject<PointerEvent>) => {
     const position = event.target.getStage()?.getPointerPosition();
     if (!position) return null;
+    // L'affichage peut être réduit, mais les données restent en 960x640.
     return { x: position.x / scale, y: position.y / scale };
   };
 
@@ -48,6 +50,7 @@ export function DrawingCanvas() {
     event.evt.shiftKey || event.evt.ctrlKey || event.evt.metaKey;
 
   const handlePointerDown = (event: KonvaEventObject<PointerEvent>) => {
+    // Le même Stage Konva sert aux deux modes d'interaction.
     if (activeTool === 'pencil') {
       startDrawing(event);
       return;
@@ -98,6 +101,7 @@ export function DrawingCanvas() {
     const top = Math.min(selectionBox.startY, selectionBox.currentY);
     const bottom = Math.max(selectionBox.startY, selectionBox.currentY);
 
+    // Un petit clic désélectionne; un vrai rectangle cherche les traits croisés.
     if (right - left > 3 || bottom - top > 3) {
       const ids = strokes
         .filter((stroke) => {
@@ -141,6 +145,8 @@ export function DrawingCanvas() {
     const y = event.target.y();
     if (x === 0 && y === 0) return;
 
+    // Konva déplace visuellement le nœud; au relâchement on reporte ce delta
+    // dans les points du store, puis on remet le nœud à l'origine.
     const currentSelection = useEditorStore.getState().selectedStrokeIds;
     event.target.position({ x: 0, y: 0 });
     moveStrokes(
@@ -162,6 +168,7 @@ export function DrawingCanvas() {
       );
     };
 
+    // La page conserve son ratio et se réduit automatiquement avec l'espace.
     const observer = new ResizeObserver(updateScale);
     observer.observe(container);
     updateScale();
@@ -231,6 +238,7 @@ export function DrawingCanvas() {
                     lineJoin="round"
                     tension={0.35}
                     listening={activeTool === 'select'}
+                    // Une zone de clic plus large facilite la sélection des traits fins.
                     hitStrokeWidth={Math.max(18, stroke.width + 8)}
                     draggable={activeTool === 'select'}
                     onPointerDown={(event) =>
@@ -241,6 +249,7 @@ export function DrawingCanvas() {
                 </Fragment>
               );
             })}
+            {/* Les destinations sont visibles uniquement pendant l'édition. */}
             {activeTool === 'select' &&
               interactions
                 .filter(
