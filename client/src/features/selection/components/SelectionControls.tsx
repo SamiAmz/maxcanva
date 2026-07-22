@@ -1,17 +1,31 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useEditorStore } from '../../../store/useEditorStore';
+import { InteractionDialog } from '../../interactions/components/InteractionDialog';
 
 export function SelectionControls() {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const selectedIds = useEditorStore((state) => state.selectedStrokeIds);
   const selectedCount = useEditorStore(
     (state) => state.selectedStrokeIds.length,
   );
+  const interactions = useEditorStore((state) => state.interactions);
   const deleteSelected = useEditorStore((state) => state.deleteSelected);
   const clearSelection = useEditorStore((state) => state.clearSelection);
+  const hasInteraction = useMemo(
+    () =>
+      interactions.some(
+        (interaction) =>
+          selectedIds.length > 0 &&
+          selectedIds.every((id) => interaction.contentIds.includes(id)),
+      ),
+    [interactions, selectedIds],
+  );
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (dialogOpen) return;
       const target = event.target as HTMLElement | null;
-      if (target?.matches('input, textarea, [contenteditable="true"]')) return;
+      if (target?.matches('input, select, textarea, button, [contenteditable="true"]')) return;
 
       if (event.key === 'Escape') {
         clearSelection();
@@ -28,7 +42,7 @@ export function SelectionControls() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [clearSelection, deleteSelected, selectedCount]);
+  }, [clearSelection, deleteSelected, dialogOpen, selectedCount]);
 
   return (
     <section className="selection-controls" aria-label="Options de sélection">
@@ -40,6 +54,15 @@ export function SelectionControls() {
       </span>
       <div className="control-divider" />
       <button
+        className="link-selection-button"
+        type="button"
+        disabled={selectedCount === 0}
+        onClick={() => setDialogOpen(true)}
+      >
+        <span aria-hidden="true">↗</span>
+        {hasInteraction ? 'Modifier le lien' : 'Créer un lien'}
+      </button>
+      <button
         className="delete-selection-button"
         type="button"
         disabled={selectedCount === 0}
@@ -48,6 +71,7 @@ export function SelectionControls() {
         <span aria-hidden="true">⌫</span>
         Effacer
       </button>
+      <InteractionDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
     </section>
   );
 }

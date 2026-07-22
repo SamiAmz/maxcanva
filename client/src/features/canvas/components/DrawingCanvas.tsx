@@ -3,6 +3,7 @@ import type { KonvaEventObject } from 'konva/lib/Node';
 import { Layer, Line, Rect, Stage } from 'react-konva';
 import { useEditorStore } from '../../../store/useEditorStore';
 import { usePencilDrawing } from '../hooks/usePencilDrawing';
+import { InteractionOverlay } from '../../interactions/components/InteractionOverlay';
 
 const PAGE_WIDTH = 960;
 const PAGE_HEIGHT = 640;
@@ -23,6 +24,8 @@ export function DrawingCanvas() {
   const activeTool = useEditorStore((state) => state.activeTool);
   const activeWindowId = useEditorStore((state) => state.activeWindowId);
   const allStrokes = useEditorStore((state) => state.strokes);
+  const windows = useEditorStore((state) => state.windows);
+  const interactions = useEditorStore((state) => state.interactions);
   const selectedStrokeIds = useEditorStore((state) => state.selectedStrokeIds);
   const selectStroke = useEditorStore((state) => state.selectStroke);
   const setSelection = useEditorStore((state) => state.setSelection);
@@ -238,6 +241,34 @@ export function DrawingCanvas() {
                 </Fragment>
               );
             })}
+            {activeTool === 'select' &&
+              interactions
+                .filter(
+                  (interaction) =>
+                    interaction.sourceWindowId === activeWindowId,
+                )
+                .map((interaction) => (
+                  <InteractionOverlay
+                    key={interaction.id}
+                    interaction={interaction}
+                    strokes={strokes}
+                    targetLabel={
+                      interaction.type === 'button'
+                        ? windows.find(
+                            (window) =>
+                              window.id === interaction.targetWindowId,
+                          )?.name ?? 'Fenêtre'
+                        : (() => {
+                            try {
+                              return new URL(interaction.url ?? '').hostname;
+                            } catch {
+                              return 'Site web';
+                            }
+                          })()
+                    }
+                    scale={scale}
+                  />
+                ))}
             {selectionBox && (
               <Rect
                 x={Math.min(selectionBox.startX, selectionBox.currentX)}

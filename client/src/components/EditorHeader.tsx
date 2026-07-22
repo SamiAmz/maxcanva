@@ -1,6 +1,10 @@
 import { useEditorStore } from '../store/useEditorStore';
 
-export function EditorHeader() {
+interface EditorHeaderProps {
+  onStartSimulation: () => void;
+}
+
+export function EditorHeader({ onStartSimulation }: EditorHeaderProps) {
   const activeWindow = useEditorStore((state) =>
     state.windows.find((window) => window.id === state.activeWindowId),
   );
@@ -19,9 +23,19 @@ export function EditorHeader() {
         <strong>{activeWindow?.name ?? 'Fenêtre'}</strong>
       </div>
 
-      <div className="tool-status" aria-label="Outil actuellement sélectionné">
-        <span aria-hidden="true" />
-        {activeTool === 'pencil' ? 'Crayon actif' : 'Sélection active'}
+      <div className="header-actions">
+        <div className="tool-status" aria-label="Outil actuellement sélectionné">
+          <span aria-hidden="true" />
+          {activeTool === 'pencil' ? 'Crayon actif' : 'Sélection active'}
+        </div>
+        <button
+          className="start-simulation-button"
+          type="button"
+          onClick={onStartSimulation}
+        >
+          <span aria-hidden="true">▶</span>
+          Simuler
+        </button>
       </div>
     </header>
   );

@@ -1,5 +1,11 @@
 import { create } from 'zustand';
-import type { PrototypeWindow, Stroke, Tool } from '../types/drawing';
+import type {
+  InteractionType,
+  PrototypeInteraction,
+  PrototypeWindow,
+  Stroke,
+  Tool,
+} from '../types/drawing';
 
 const INITIAL_WINDOW: PrototypeWindow = {
   id: 'window-1',
@@ -13,6 +19,7 @@ interface EditorState {
   windows: PrototypeWindow[];
   activeWindowId: string;
   strokes: Stroke[];
+  interactions: PrototypeInteraction[];
   selectedStrokeIds: string[];
   setActiveTool: (tool: Tool) => void;
   setPencilColor: (color: string) => void;
@@ -24,6 +31,14 @@ interface EditorState {
   clearSelection: () => void;
   deleteSelected: () => void;
   moveStrokes: (ids: string[], x: number, y: number) => void;
+  saveInteraction: (interaction: {
+    sourceWindowId: string;
+    targetWindowId?: string;
+    url?: string;
+    contentIds: string[];
+    type: InteractionType;
+  }) => void;
+  removeInteractionsForContents: (contentIds: string[]) => void;
   addStroke: (stroke: Stroke) => void;
   updateStrokePoints: (id: string, points: number[]) => void;
 }
@@ -35,6 +50,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   windows: [INITIAL_WINDOW],
   activeWindowId: INITIAL_WINDOW.id,
   strokes: [],
+  interactions: [],
   selectedStrokeIds: [],
   setActiveTool: (activeTool) =>
     set((state) => ({
@@ -83,12 +99,22 @@ export const useEditorStore = create<EditorState>((set) => ({
     })),
   clearSelection: () => set({ selectedStrokeIds: [] }),
   deleteSelected: () =>
-    set((state) => ({
-      strokes: state.strokes.filter(
-        (stroke) => !state.selectedStrokeIds.includes(stroke.id),
-      ),
-      selectedStrokeIds: [],
-    })),
+    set((state) => {
+      const selectedIds = new Set(state.selectedStrokeIds);
+
+      return {
+        strokes: state.strokes.filter((stroke) => !selectedIds.has(stroke.id)),
+        interactions: state.interactions
+          .map((interaction) => ({
+            ...interaction,
+            contentIds: interaction.contentIds.filter(
+              (contentId) => !selectedIds.has(contentId),
+            ),
+          }))
+          .filter((interaction) => interaction.contentIds.length > 0),
+        selectedStrokeIds: [],
+      };
+    }),
   moveStrokes: (ids, x, y) =>
     set((state) => ({
       strokes: state.strokes.map((stroke) =>
@@ -102,6 +128,40 @@ export const useEditorStore = create<EditorState>((set) => ({
           : stroke,
       ),
     })),
+  saveInteraction: (newInteraction) =>
+    set((state) => {
+      const selectedIds = new Set(newInteraction.contentIds);
+      const remainingInteractions = state.interactions
+        .map((interaction) => ({
+          ...interaction,
+          contentIds: interaction.contentIds.filter(
+            (contentId) => !selectedIds.has(contentId),
+          ),
+        }))
+        .filter((interaction) => interaction.contentIds.length > 0);
+
+      return {
+        interactions: [
+          ...remainingInteractions,
+          { ...newInteraction, id: crypto.randomUUID() },
+        ],
+      };
+    }),
+  removeInteractionsForContents: (contentIds) =>
+    set((state) => {
+      const idsToRemove = new Set(contentIds);
+
+      return {
+        interactions: state.interactions
+          .map((interaction) => ({
+            ...interaction,
+            contentIds: interaction.contentIds.filter(
+              (contentId) => !idsToRemove.has(contentId),
+            ),
+          }))
+          .filter((interaction) => interaction.contentIds.length > 0),
+      };
+    }),
   addStroke: (stroke) =>
     set((state) => ({ strokes: [...state.strokes, stroke] })),
   updateStrokePoints: (id, points) =>

@@ -111,6 +111,37 @@ button {
   background: #5b5bd6;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 9px;
+}
+
+.start-simulation-button {
+  display: flex;
+  height: 36px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 13px;
+  border: 1px solid #5454c9;
+  border-radius: 10px;
+  color: #fff;
+  background: #5b5bd6;
+  box-shadow: 0 5px 14px rgba(91, 91, 214, 0.2);
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.start-simulation-button:hover {
+  background: #4d4dc4;
+}
+
+.start-simulation-button span {
+  font-size: 9px;
+}
+
 .tool-rail {
   z-index: 5;
   grid-row: 2;
@@ -456,6 +487,389 @@ button {
   cursor: pointer;
 }
 
+.link-selection-button {
+  display: flex;
+  height: 34px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 11px;
+  border: 1px solid #d9d7fa;
+  border-radius: 9px;
+  color: #4f46c8;
+  background: #f3f2ff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.link-selection-button span {
+  font-size: 16px;
+}
+
+.link-selection-button:hover:not(:disabled) {
+  border-color: #c7c3f5;
+  background: #e9e7ff;
+}
+
+.link-selection-button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.dialog-backdrop {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow-y: auto;
+  padding: 20px;
+  background: rgba(25, 31, 42, 0.38);
+  backdrop-filter: blur(5px);
+}
+
+.interaction-dialog {
+  width: min(480px, 100%);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 28px 70px rgba(25, 31, 42, 0.25);
+}
+
+.interaction-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dialog-eyebrow {
+  color: #5b5bd6;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.interaction-dialog h2 {
+  margin: 4px 0 0;
+  color: #202a3d;
+  font-size: 21px;
+  letter-spacing: -0.025em;
+}
+
+.dialog-close-button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  color: #727c8d;
+  background: #f2f4f7;
+  font-size: 23px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dialog-description {
+  margin: 12px 0 22px;
+  color: #70798a;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.interaction-type-fieldset {
+  margin: 0 0 20px;
+  padding: 0;
+  border: 0;
+}
+
+.interaction-type-fieldset legend,
+.target-window-field > span,
+.target-url-field > span {
+  display: block;
+  margin-bottom: 8px;
+  color: #4c5669;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.interaction-type-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.interaction-type-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #e2e6ec;
+  border-radius: 12px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.interaction-type-card:hover {
+  border-color: #d0cdf7;
+  background: #fafaff;
+}
+
+.interaction-type-card.is-selected {
+  border-color: #a9a4ef;
+  background: #f0efff;
+  box-shadow: 0 0 0 2px rgba(91, 91, 214, 0.08);
+}
+
+.interaction-type-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 9px;
+  color: #4f46c8;
+  background: #e8e7ff;
+  font-size: 17px;
+}
+
+.interaction-type-card strong,
+.interaction-type-card small {
+  display: block;
+}
+
+.interaction-type-card strong {
+  color: #344054;
+  font-size: 12px;
+}
+
+.interaction-type-card small {
+  margin-top: 2px;
+  color: #858e9d;
+  font-size: 9px;
+}
+
+.target-window-field,
+.target-url-field {
+  display: block;
+}
+
+.target-window-field select,
+.target-url-field input {
+  width: 100%;
+  height: 44px;
+  padding: 0 38px 0 12px;
+  border: 1px solid #dce1e8;
+  border-radius: 10px;
+  color: #344054;
+  background: #fff;
+  font-size: 13px;
+}
+
+.target-window-field select:focus,
+.target-url-field input:focus {
+  border-color: #9e99eb;
+  outline: 3px solid rgba(91, 91, 214, 0.13);
+}
+
+.target-window-field > small,
+.target-url-field > small {
+  display: block;
+  margin-top: 7px;
+  color: #9a6c28;
+  font-size: 10px;
+}
+
+.interaction-dialog-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid #eceff3;
+}
+
+.dialog-footer-spacer {
+  flex: 1;
+}
+
+.dialog-cancel-button,
+.dialog-confirm-button,
+.remove-interaction-button {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.simulation-overlay {
+  position: fixed;
+  z-index: 200;
+  inset: 0;
+  display: grid;
+  grid-template-rows: 68px minmax(0, 1fr);
+  color: #fff;
+  background: #121722;
+}
+
+.simulation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: #191f2c;
+}
+
+.simulation-title,
+.simulation-actions {
+  display: flex;
+  align-items: center;
+}
+
+.simulation-title {
+  gap: 11px;
+}
+
+.simulation-live-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #5ee19b;
+  box-shadow: 0 0 0 5px rgba(94, 225, 155, 0.12);
+}
+
+.simulation-title strong,
+.simulation-title small {
+  display: block;
+}
+
+.simulation-title strong {
+  font-size: 13px;
+}
+
+.simulation-title small {
+  margin-top: 2px;
+  color: #9fa8b8;
+  font-size: 10px;
+}
+
+.simulation-actions {
+  gap: 8px;
+}
+
+.simulation-back-button,
+.close-simulation-button {
+  height: 36px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.simulation-back-button {
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #dce1e9;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.simulation-back-button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.close-simulation-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 0 13px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.close-simulation-button span {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 17px;
+}
+
+.simulation-workspace {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: #232a38;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.1) 0.7px, transparent 0.7px);
+  background-size: 20px 20px;
+}
+
+.simulation-page {
+  position: relative;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.35);
+}
+
+.simulation-page canvas {
+  display: block;
+}
+
+.simulation-empty-state {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #afb6c2;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.dialog-cancel-button {
+  border: 1px solid #dfe3e9;
+  color: #626d7f;
+  background: #fff;
+}
+
+.dialog-confirm-button {
+  border: 1px solid #5b5bd6;
+  color: #fff;
+  background: #5b5bd6;
+  box-shadow: 0 5px 14px rgba(91, 91, 214, 0.22);
+}
+
+.dialog-confirm-button:disabled {
+  border-color: #b9bec8;
+  background: #b9bec8;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.remove-interaction-button {
+  border: 0;
+  color: #b4232d;
+  background: #fff0f1;
+}
+
 .delete-selection-button span {
   font-size: 17px;
 }
@@ -597,6 +1011,17 @@ button:focus-visible,
     display: none;
   }
 
+  .start-simulation-button {
+    width: 38px;
+    padding: 0;
+    justify-content: center;
+    font-size: 0;
+  }
+
+  .start-simulation-button span {
+    font-size: 10px;
+  }
+
   .document-title {
     justify-self: end;
   }
@@ -688,6 +1113,38 @@ button:focus-visible,
 
   .selection-summary {
     min-width: 0;
+  }
+
+  .selection-summary-icon,
+  .selection-controls > .control-divider {
+    display: none;
+  }
+
+  .link-selection-button,
+  .delete-selection-button {
+    padding: 0 9px;
+  }
+
+  .interaction-dialog {
+    padding: 20px;
+    border-radius: 17px;
+  }
+
+  .interaction-type-options {
+    grid-template-columns: 1fr;
+  }
+
+  .simulation-overlay {
+    grid-template-rows: 60px minmax(0, 1fr);
+  }
+
+  .simulation-header {
+    padding: 0 12px;
+  }
+
+  .simulation-title small,
+  .close-simulation-button {
+    display: none;
   }
 
   .control-label,

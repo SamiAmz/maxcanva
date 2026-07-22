@@ -14,3 +14,14 @@ export interface Stroke {
   width: number;
   opacity: number;
 }
+
+export type InteractionType = 'button' | 'link';
+
+export interface PrototypeInteraction {
+  id: string;
+  sourceWindowId: string;
+  targetWindowId?: string;
+  url?: string;
+  contentIds: string[];
+  type: InteractionType;
+}
