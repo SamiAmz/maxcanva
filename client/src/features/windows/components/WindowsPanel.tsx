@@ -4,7 +4,7 @@ import { WindowThumbnail } from './WindowThumbnail';
 export function WindowsPanel() {
   const windows = useEditorStore((state) => state.windows);
   const activeWindowId = useEditorStore((state) => state.activeWindowId);
-  const strokes = useEditorStore((state) => state.strokes);
+  const contents = useEditorStore((state) => state.contents);
   const createWindow = useEditorStore((state) => state.createWindow);
   const selectWindow = useEditorStore((state) => state.selectWindow);
 
@@ -28,8 +28,8 @@ export function WindowsPanel() {
 
       <div className="window-list">
         {windows.map((window, index) => {
-          const windowStrokes = strokes.filter(
-            (stroke) => stroke.windowId === window.id,
+          const windowContents = contents.filter(
+            (content) => content.windowId === window.id,
           );
           const isActive = window.id === activeWindowId;
 
@@ -43,13 +43,13 @@ export function WindowsPanel() {
             >
               <span className="window-number">{index + 1}</span>
               <span className="window-preview">
-                <WindowThumbnail strokes={windowStrokes} />
+                <WindowThumbnail contents={windowContents} />
               </span>
               <span className="window-card-footer">
                 <strong>{window.name}</strong>
                 <small>
-                  {windowStrokes.length}{' '}
-                  {windowStrokes.length > 1 ? 'traits' : 'trait'}
+                  {windowContents.length}{' '}
+                  {windowContents.length > 1 ? 'éléments' : 'élément'}
                 </small>
               </span>
             </button>

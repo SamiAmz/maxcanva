@@ -31,7 +31,7 @@ function normalizeWebUrl(value: string) {
 export function InteractionDialog({ open, onClose }: InteractionDialogProps) {
   const windows = useEditorStore((state) => state.windows);
   const activeWindowId = useEditorStore((state) => state.activeWindowId);
-  const selectedIds = useEditorStore((state) => state.selectedStrokeIds);
+  const selectedIds = useEditorStore((state) => state.selectedContentIds);
   const interactions = useEditorStore((state) => state.interactions);
   const saveInteraction = useEditorStore((state) => state.saveInteraction);
   const removeInteraction = useEditorStore(
@@ -129,8 +129,8 @@ export function InteractionDialog({ open, onClose }: InteractionDialogProps) {
 
         <p className="dialog-description">
           {selectedIds.length > 1
-            ? `Les ${selectedIds.length} traits sélectionnés agiront ensemble`
-            : 'Le trait sélectionné agira'}{' '}
+            ? `Les ${selectedIds.length} contenus sélectionnés agiront ensemble`
+            : 'Le contenu sélectionné agira'}{' '}
           pendant la simulation.
         </p>
 

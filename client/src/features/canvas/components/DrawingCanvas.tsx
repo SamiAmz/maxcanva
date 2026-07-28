@@ -1,9 +1,20 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { KonvaEventObject } from 'konva/lib/Node';
-import { Layer, Line, Rect, Stage } from 'react-konva';
+import type { Shape as KonvaShape } from 'konva/lib/Shape';
+import type { Transformer as KonvaTransformer } from 'konva/lib/shapes/Transformer';
+import { Circle, Layer, Line, Rect, Stage, Transformer } from 'react-konva';
 import { useEditorStore } from '../../../store/useEditorStore';
 import { usePencilDrawing } from '../hooks/usePencilDrawing';
 import { InteractionOverlay } from '../../interactions/components/InteractionOverlay';
+import { CanvasContentShape } from './CanvasContentShape';
+import {
+  getCombinedBounds,
+  getContentBounds,
+} from '../utils/contentGeometry';
+import {
+  getAlignmentSnap,
+  type AlignmentGuide,
+} from '../utils/alignmentGuides';
 
 const PAGE_WIDTH = 960;
 const PAGE_HEIGHT = 640;
@@ -17,27 +28,90 @@ interface SelectionBox {
   additive: boolean;
 }
 
-// Surface principale: elle distribue les gestes au crayon ou à la sélection.
+interface ShapeDraft {
+  type: 'rectangle' | 'circle';
+  startX: number;
+  startY: number;
+  currentX: number;
+  currentY: number;
+}
+
+interface TextEditor {
+  x: number;
+  y: number;
+  value: string;
+}
+
+interface CheckboxLabelEditor extends TextEditor {
+  contentId: string;
+  initialValue: string;
+}
+
+interface DragTransaction {
+  ownerId: string;
+  contentIds: string[];
+  positions: Map<string, { x: number; y: number }>;
+  pointerStart: { x: number; y: number };
+  lastDelta: { x: number; y: number };
+}
+
+// Surface principale: elle distribue les gestes à l'outil actuellement actif.
 export function DrawingCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const contentNodesRef = useRef(new Map<string, KonvaShape>());
+  const dragTransactionRef = useRef<DragTransaction | null>(null);
+  const dragPointerStartRef = useRef<{
+    contentId: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  const resizePositionsRef = useRef(
+    new Map<string, { x: number; y: number }>(),
+  );
+  const transformerRef = useRef<KonvaTransformer>(null);
   const [scale, setScale] = useState(1);
   const [selectionBox, setSelectionBox] = useState<SelectionBox | null>(null);
+  const [shapeDraft, setShapeDraft] = useState<ShapeDraft | null>(null);
+  const [textEditor, setTextEditor] = useState<TextEditor | null>(null);
+  const [checkboxLabelEditor, setCheckboxLabelEditor] =
+    useState<CheckboxLabelEditor | null>(null);
+  const [alignmentGuides, setAlignmentGuides] = useState<AlignmentGuide[]>([]);
+
   const activeTool = useEditorStore((state) => state.activeTool);
   const activeWindowId = useEditorStore((state) => state.activeWindowId);
-  const allStrokes = useEditorStore((state) => state.strokes);
+  const allContents = useEditorStore((state) => state.contents);
   const windows = useEditorStore((state) => state.windows);
   const interactions = useEditorStore((state) => state.interactions);
-  const selectedStrokeIds = useEditorStore((state) => state.selectedStrokeIds);
-  const selectStroke = useEditorStore((state) => state.selectStroke);
+  const selectedContentIds = useEditorStore(
+    (state) => state.selectedContentIds,
+  );
+  const drawingColor = useEditorStore((state) => state.drawingColor);
+  const drawingWidth = useEditorStore((state) => state.drawingWidth);
+  const setActiveTool = useEditorStore((state) => state.setActiveTool);
+  const selectContent = useEditorStore((state) => state.selectContent);
   const setSelection = useEditorStore((state) => state.setSelection);
   const clearSelection = useEditorStore((state) => state.clearSelection);
-  const moveStrokes = useEditorStore((state) => state.moveStrokes);
-  const strokes = useMemo(
+  const moveContents = useEditorStore((state) => state.moveContents);
+  const transformContents = useEditorStore((state) => state.transformContents);
+  const addContent = useEditorStore((state) => state.addContent);
+  const updateCheckboxLabel = useEditorStore(
+    (state) => state.updateCheckboxLabel,
+  );
+
+  const contents = useMemo(
     () =>
-      allStrokes.filter((stroke) => stroke.windowId === activeWindowId),
-    [activeWindowId, allStrokes],
+      allContents.filter((content) => content.windowId === activeWindowId),
+    [activeWindowId, allContents],
   );
   const { startDrawing, continueDrawing, stopDrawing } = usePencilDrawing(scale);
+  const selectedContents = useMemo(
+    () =>
+      contents.filter((content) => selectedContentIds.includes(content.id)),
+    [contents, selectedContentIds],
+  );
+  const keepResizeRatio = selectedContents.some(
+    (content) => content.type === 'circle' || content.type === 'text',
+  );
 
   const getPoint = (event: KonvaEventObject<PointerEvent>) => {
     const position = event.target.getStage()?.getPointerPosition();
@@ -50,7 +124,6 @@ export function DrawingCanvas() {
     event.evt.shiftKey || event.evt.ctrlKey || event.evt.metaKey;
 
   const handlePointerDown = (event: KonvaEventObject<PointerEvent>) => {
-    // Le même Stage Konva sert aux deux modes d'interaction.
     if (activeTool === 'pencil') {
       startDrawing(event);
       return;
@@ -61,6 +134,73 @@ export function DrawingCanvas() {
     event.evt.preventDefault();
     const point = getPoint(event);
     if (!point) return;
+
+    if (activeTool === 'rectangle' || activeTool === 'circle') {
+      setShapeDraft({
+        type: activeTool,
+        startX: point.x,
+        startY: point.y,
+        currentX: point.x,
+        currentY: point.y,
+      });
+      return;
+    }
+
+    if (activeTool === 'text') {
+      setTextEditor({ x: point.x, y: point.y, value: '' });
+      return;
+    }
+
+    if (activeTool === 'checkbox' || activeTool === 'text-input') {
+      const id = crypto.randomUUID();
+      const isCheckbox = activeTool === 'checkbox';
+      const width = isCheckbox ? 28 : 240;
+      const height = isCheckbox ? 28 : 44;
+      const x = Math.min(point.x, PAGE_WIDTH - width);
+      const y = Math.min(point.y, PAGE_HEIGHT - height);
+
+      addContent(
+        isCheckbox
+          ? {
+              id,
+              windowId: activeWindowId,
+              type: 'checkbox',
+              x,
+              y,
+              width,
+              height,
+              label: '',
+              checked: false,
+              color: '#374151',
+              opacity: 1,
+            }
+          : {
+              id,
+              windowId: activeWindowId,
+              type: 'text-input',
+              x,
+              y,
+              width,
+              height,
+              placeholder: 'Saisir du texte',
+              color: '#374151',
+              opacity: 1,
+            },
+      );
+      setSelection([id]);
+      if (isCheckbox) {
+        setCheckboxLabelEditor({
+          contentId: id,
+          x: Math.min(x + width + 8, PAGE_WIDTH - 300),
+          y,
+          value: '',
+          initialValue: '',
+        });
+      } else {
+        setActiveTool('select');
+      }
+      return;
+    }
 
     const additive = hasModifier(event);
     if (!additive) clearSelection();
@@ -79,13 +219,68 @@ export function DrawingCanvas() {
       return;
     }
 
-    if (!selectionBox) return;
-    event.evt.preventDefault();
     const point = getPoint(event);
     if (!point) return;
+
+    if (shapeDraft) {
+      event.evt.preventDefault();
+      setShapeDraft((draft) =>
+        draft
+          ? { ...draft, currentX: point.x, currentY: point.y }
+          : null,
+      );
+      return;
+    }
+
+    if (!selectionBox) return;
+    event.evt.preventDefault();
     setSelectionBox((box) =>
       box ? { ...box, currentX: point.x, currentY: point.y } : null,
     );
+  };
+
+  const finishShape = () => {
+    if (!shapeDraft) return false;
+
+    const deltaX = shapeDraft.currentX - shapeDraft.startX;
+    const deltaY = shapeDraft.currentY - shapeDraft.startY;
+
+    if (shapeDraft.type === 'rectangle') {
+      const width = Math.abs(deltaX);
+      const height = Math.abs(deltaY);
+      if (width > 4 && height > 4) {
+        addContent({
+          id: crypto.randomUUID(),
+          windowId: activeWindowId,
+          type: 'rectangle',
+          x: Math.min(shapeDraft.startX, shapeDraft.currentX),
+          y: Math.min(shapeDraft.startY, shapeDraft.currentY),
+          width,
+          height,
+          color: drawingColor,
+          strokeWidth: drawingWidth,
+          opacity: 1,
+        });
+      }
+    } else {
+      const radius = Math.hypot(deltaX, deltaY);
+      if (radius > 4) {
+        addContent({
+          id: crypto.randomUUID(),
+          windowId: activeWindowId,
+          type: 'circle',
+          x: shapeDraft.startX,
+          y: shapeDraft.startY,
+          radius,
+          color: drawingColor,
+          strokeWidth: drawingWidth,
+          opacity: 1,
+        });
+      }
+    }
+
+    setShapeDraft(null);
+    return true;
   };
 
   const finishInteraction = () => {
@@ -94,33 +289,26 @@ export function DrawingCanvas() {
       return;
     }
 
-    if (!selectionBox) return;
+    if (finishShape() || !selectionBox) return;
 
     const left = Math.min(selectionBox.startX, selectionBox.currentX);
     const right = Math.max(selectionBox.startX, selectionBox.currentX);
     const top = Math.min(selectionBox.startY, selectionBox.currentY);
     const bottom = Math.max(selectionBox.startY, selectionBox.currentY);
 
-    // Un petit clic désélectionne; un vrai rectangle cherche les traits croisés.
+    // Un petit clic désélectionne; un vrai rectangle cherche les contenus croisés.
     if (right - left > 3 || bottom - top > 3) {
-      const ids = strokes
-        .filter((stroke) => {
-          const xs = stroke.points.filter((_, index) => index % 2 === 0);
-          const ys = stroke.points.filter((_, index) => index % 2 === 1);
-          const padding = stroke.width / 2;
-          const strokeLeft = Math.min(...xs) - padding;
-          const strokeRight = Math.max(...xs) + padding;
-          const strokeTop = Math.min(...ys) - padding;
-          const strokeBottom = Math.max(...ys) + padding;
-
+      const ids = contents
+        .filter((content) => {
+          const bounds = getContentBounds(content);
           return !(
-            strokeRight < left ||
-            strokeLeft > right ||
-            strokeBottom < top ||
-            strokeTop > bottom
+            bounds.x + bounds.width < left ||
+            bounds.x > right ||
+            bounds.y + bounds.height < top ||
+            bounds.y > bottom
           );
         })
-        .map((stroke) => stroke.id);
+        .map((content) => content.id);
 
       setSelection(ids, selectionBox.additive);
     }
@@ -128,32 +316,167 @@ export function DrawingCanvas() {
     setSelectionBox(null);
   };
 
-  const handleStrokePointerDown = (
+  const handleContentPointerDown = (
     event: KonvaEventObject<PointerEvent>,
-    strokeId: string,
+    contentId: string,
   ) => {
     if (activeTool !== 'select') return;
     event.cancelBubble = true;
-    selectStroke(strokeId, hasModifier(event));
+    const pointer = event.target.getStage()?.getPointerPosition();
+    dragPointerStartRef.current = pointer
+      ? { contentId, x: pointer.x / scale, y: pointer.y / scale }
+      : null;
+    selectContent(contentId, hasModifier(event));
   };
 
-  const saveMovedStrokes = (
-    event: KonvaEventObject<DragEvent>,
-    strokeId: string,
+  const saveMovedContents = (
+    _event: KonvaEventObject<DragEvent>,
+    contentId: string,
   ) => {
-    const x = event.target.x();
-    const y = event.target.y();
-    if (x === 0 && y === 0) return;
+    const transaction = dragTransactionRef.current;
+    // Konva déclenche aussi dragend sur les autres nœuds d'une sélection
+    // multiple. Seul le nœud saisi par l'utilisateur doit enregistrer le geste.
+    if (!transaction || transaction.ownerId !== contentId) return;
 
-    // Konva déplace visuellement le nœud; au relâchement on reporte ce delta
-    // dans les points du store, puis on remet le nœud à l'origine.
-    const currentSelection = useEditorStore.getState().selectedStrokeIds;
-    event.target.position({ x: 0, y: 0 });
-    moveStrokes(
-      currentSelection.includes(strokeId) ? currentSelection : [strokeId],
-      x,
-      y,
+    if (!transaction.positions.has(contentId)) {
+      dragTransactionRef.current = null;
+      setAlignmentGuides([]);
+      return;
+    }
+
+    const { x: deltaX, y: deltaY } = transaction.lastDelta;
+
+    transaction.positions.forEach((position, id) => {
+      contentNodesRef.current.get(id)?.position(position);
+    });
+    dragTransactionRef.current = null;
+    dragPointerStartRef.current = null;
+    setAlignmentGuides([]);
+
+    if (Number.isFinite(deltaX) && Number.isFinite(deltaY)) {
+      moveContents(transaction.contentIds, deltaX, deltaY);
+    }
+  };
+
+  const alignMovedContents = (
+    event: KonvaEventObject<DragEvent>,
+    contentId: string,
+  ) => {
+    const transaction = dragTransactionRef.current;
+    if (!transaction || transaction.ownerId !== contentId) return;
+
+    const pointer = event.target.getStage()?.getPointerPosition();
+    if (!pointer) return;
+    const rawDeltaX = pointer.x / scale - transaction.pointerStart.x;
+    const rawDeltaY = pointer.y / scale - transaction.pointerStart.y;
+    const movingContents = contents.filter((content) =>
+      transaction.contentIds.includes(content.id),
     );
+    const movingBounds = getCombinedBounds(movingContents);
+    if (!movingBounds) return;
+    const boundedDeltaX = Math.min(
+      PAGE_WIDTH - movingBounds.x - movingBounds.width,
+      Math.max(-movingBounds.x, rawDeltaX),
+    );
+    const boundedDeltaY = Math.min(
+      PAGE_HEIGHT - movingBounds.y - movingBounds.height,
+      Math.max(-movingBounds.y, rawDeltaY),
+    );
+
+    const otherBounds = contents
+      .filter((content) => !transaction.contentIds.includes(content.id))
+      .map(getContentBounds);
+    const snapped = event.evt.altKey
+      ? {
+          deltaX: boundedDeltaX,
+          deltaY: boundedDeltaY,
+          guides: [],
+        }
+      : getAlignmentSnap(
+          movingBounds,
+          otherBounds,
+          boundedDeltaX,
+          boundedDeltaY,
+          6 / scale,
+        );
+
+    transaction.lastDelta = { x: snapped.deltaX, y: snapped.deltaY };
+    transaction.positions.forEach((position, id) => {
+      contentNodesRef.current.get(id)?.position({
+        x: position.x + snapped.deltaX,
+        y: position.y + snapped.deltaY,
+      });
+    });
+    setAlignmentGuides(snapped.guides);
+  };
+
+  const saveResizedContents = () => {
+    const transformer = transformerRef.current;
+    const nodes = transformer?.nodes() ?? [];
+    const transforms = nodes
+      .map((node) => ({
+        id: node.id(),
+        x: node.x(),
+        y: node.y(),
+        scaleX: node.scaleX(),
+        scaleY: node.scaleY(),
+      }))
+      .filter(
+        ({ x, y, scaleX, scaleY }) =>
+          Number.isFinite(x) &&
+          Number.isFinite(y) &&
+          Number.isFinite(scaleX) &&
+          Number.isFinite(scaleY),
+      );
+
+    // Détacher d'abord le cadre évite qu'il recalcule sa géométrie pendant
+    // la normalisation successive des nœuds sélectionnés.
+    transformer?.nodes([]);
+    nodes.forEach((node) => {
+      const initialPosition = resizePositionsRef.current.get(node.id());
+      if (initialPosition) node.position(initialPosition);
+      node.scale({ x: 1, y: 1 });
+    });
+    resizePositionsRef.current.clear();
+    transformContents(transforms);
+  };
+
+  const submitText = () => {
+    const text = textEditor?.value.trim();
+    if (!textEditor || !text) {
+      setTextEditor(null);
+      return;
+    }
+
+    addContent({
+      id: crypto.randomUUID(),
+      windowId: activeWindowId,
+      type: 'text',
+      x: textEditor.x,
+      y: textEditor.y,
+      text,
+      fontSize: 28,
+      color: drawingColor,
+      opacity: 1,
+    });
+    setTextEditor(null);
+  };
+
+  const finishCheckboxLabel = (label = '') => {
+    if (!checkboxLabelEditor) return;
+    updateCheckboxLabel(checkboxLabelEditor.contentId, label.trim());
+    setCheckboxLabelEditor(null);
+    setAlignmentGuides([]);
+    setActiveTool('select');
+    setSelection([checkboxLabelEditor.contentId]);
+  };
+
+  const cancelCheckboxLabel = () => {
+    if (!checkboxLabelEditor) return;
+    const contentId = checkboxLabelEditor.contentId;
+    setCheckboxLabelEditor(null);
+    setActiveTool('select');
+    setSelection([contentId]);
   };
 
   useEffect(() => {
@@ -168,17 +491,57 @@ export function DrawingCanvas() {
       );
     };
 
-    // La page conserve son ratio et se réduit automatiquement avec l'espace.
     const observer = new ResizeObserver(updateScale);
     observer.observe(container);
     updateScale();
-
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    setSelectionBox(null);
+    setShapeDraft(null);
+    setTextEditor(null);
+    setCheckboxLabelEditor(null);
+    dragTransactionRef.current = null;
+    dragPointerStartRef.current = null;
+    resizePositionsRef.current.clear();
+  }, [activeTool, activeWindowId]);
+
+  useEffect(() => {
+    const transformer = transformerRef.current;
+    if (!transformer) return;
+
+    const nodes =
+      activeTool === 'select'
+        ? selectedContentIds
+            .map((id) => contentNodesRef.current.get(id))
+            .filter((node): node is KonvaShape => Boolean(node))
+        : [];
+
+    transformer.nodes(nodes);
+    transformer.getLayer()?.batchDraw();
+  }, [activeTool, contents, selectedContentIds]);
+
+  const rectanglePreview =
+    shapeDraft?.type === 'rectangle'
+      ? {
+          x: Math.min(shapeDraft.startX, shapeDraft.currentX),
+          y: Math.min(shapeDraft.startY, shapeDraft.currentY),
+          width: Math.abs(shapeDraft.currentX - shapeDraft.startX),
+          height: Math.abs(shapeDraft.currentY - shapeDraft.startY),
+        }
+      : null;
+  const circlePreview =
+    shapeDraft?.type === 'circle'
+      ? Math.hypot(
+          shapeDraft.currentX - shapeDraft.startX,
+          shapeDraft.currentY - shapeDraft.startY,
+        )
+      : null;
+
   return (
     <main
-      className={`canvas-workspace ${activeTool === 'select' ? 'is-selecting' : ''}`}
+      className={`canvas-workspace tool-${activeTool}`}
       ref={containerRef}
     >
       <div
@@ -188,10 +551,10 @@ export function DrawingCanvas() {
           height: PAGE_HEIGHT * scale,
         }}
       >
-        {strokes.length === 0 && (
+        {contents.length === 0 && (
           <div className="canvas-hint" aria-hidden="true">
             <span className="canvas-hint-icon">✎</span>
-            <span>Dessinez quelque chose</span>
+            <span>Commencez à créer</span>
           </div>
         )}
 
@@ -212,44 +575,80 @@ export function DrawingCanvas() {
               name="canvas-background"
               listening
             />
-            {strokes.map((stroke) => {
-              const isSelected = selectedStrokeIds.includes(stroke.id);
+            {contents.map((content) => (
+              <CanvasContentShape
+                key={content.id}
+                nodeRef={(node) => {
+                  if (node) contentNodesRef.current.set(content.id, node);
+                  else contentNodesRef.current.delete(content.id);
+                }}
+                content={content}
+                interactive={activeTool === 'select'}
+                draggable={activeTool === 'select'}
+                onPointerDown={(event) =>
+                  handleContentPointerDown(event, content.id)
+                }
+                onDoubleClick={(event) => {
+                  if (activeTool !== 'select' || content.type !== 'checkbox') {
+                    return;
+                  }
+                  event.cancelBubble = true;
+                  setCheckboxLabelEditor({
+                    contentId: content.id,
+                    x: Math.min(
+                      content.x + content.width + 8,
+                      PAGE_WIDTH - 300,
+                    ),
+                    y: content.y,
+                    value: content.label,
+                    initialValue: content.label,
+                  });
+                  setSelection([content.id]);
+                }}
+                onDragStart={(event) => {
+                  if (dragTransactionRef.current) return;
 
-              return (
-                <Fragment key={stroke.id}>
-                  {isSelected && (
-                    <Line
-                      points={stroke.points}
-                      stroke="#5b5bd6"
-                      strokeWidth={stroke.width + 10}
-                      opacity={0.2}
-                      lineCap="round"
-                      lineJoin="round"
-                      tension={0.35}
-                      listening={false}
-                    />
-                  )}
-                  <Line
-                    points={stroke.points}
-                    stroke={stroke.color}
-                    strokeWidth={stroke.width}
-                    opacity={stroke.opacity}
-                    lineCap="round"
-                    lineJoin="round"
-                    tension={0.35}
-                    listening={activeTool === 'select'}
-                    // Une zone de clic plus large facilite la sélection des traits fins.
-                    hitStrokeWidth={Math.max(18, stroke.width + 8)}
-                    draggable={activeTool === 'select'}
-                    onPointerDown={(event) =>
-                      handleStrokePointerDown(event, stroke.id)
-                    }
-                    onDragEnd={(event) => saveMovedStrokes(event, stroke.id)}
-                  />
-                </Fragment>
-              );
-            })}
-            {/* Les destinations sont visibles uniquement pendant l'édition. */}
+                  const currentSelection =
+                    useEditorStore.getState().selectedContentIds;
+                  const contentIds = currentSelection.includes(content.id)
+                    ? currentSelection
+                    : [content.id];
+                  const positions = new Map<
+                    string,
+                    { x: number; y: number }
+                  >();
+
+                  contentIds.forEach((id) => {
+                    const node = contentNodesRef.current.get(id);
+                    if (node) positions.set(id, node.position());
+                  });
+                  const pointer = event.target
+                    .getStage()
+                    ?.getPointerPosition();
+                  const pointerDown = dragPointerStartRef.current;
+                  transformerRef.current?.nodes([]);
+                  dragTransactionRef.current = {
+                    ownerId: content.id,
+                    contentIds,
+                    positions,
+                    pointerStart:
+                      pointerDown?.contentId === content.id
+                        ? { x: pointerDown.x, y: pointerDown.y }
+                        : pointer
+                          ? { x: pointer.x / scale, y: pointer.y / scale }
+                      : { x: 0, y: 0 },
+                    lastDelta: { x: 0, y: 0 },
+                  };
+                }}
+                onDragMove={(event) =>
+                  alignMovedContents(event, content.id)
+                }
+                onDragEnd={(event) =>
+                  saveMovedContents(event, content.id)
+                }
+              />
+            ))}
+
             {activeTool === 'select' &&
               interactions
                 .filter(
@@ -260,7 +659,7 @@ export function DrawingCanvas() {
                   <InteractionOverlay
                     key={interaction.id}
                     interaction={interaction}
-                    strokes={strokes}
+                    contents={contents}
                     targetLabel={
                       interaction.type === 'button'
                         ? windows.find(
@@ -278,6 +677,27 @@ export function DrawingCanvas() {
                     scale={scale}
                   />
                 ))}
+
+            {rectanglePreview && (
+              <Rect
+                {...rectanglePreview}
+                stroke={drawingColor}
+                strokeWidth={drawingWidth}
+                dash={[8, 5]}
+                listening={false}
+              />
+            )}
+            {shapeDraft?.type === 'circle' && circlePreview !== null && (
+              <Circle
+                x={shapeDraft.startX}
+                y={shapeDraft.startY}
+                radius={circlePreview}
+                stroke={drawingColor}
+                strokeWidth={drawingWidth}
+                dash={[8, 5]}
+                listening={false}
+              />
+            )}
             {selectionBox && (
               <Rect
                 x={Math.min(selectionBox.startX, selectionBox.currentX)}
@@ -291,8 +711,146 @@ export function DrawingCanvas() {
                 listening={false}
               />
             )}
+            {alignmentGuides.map((guide) => (
+              <Line
+                key={`${guide.orientation}-${guide.position}`}
+                points={
+                  guide.orientation === 'vertical'
+                    ? [guide.position, guide.start, guide.position, guide.end]
+                    : [guide.start, guide.position, guide.end, guide.position]
+                }
+                stroke="#8b5cf6"
+                strokeWidth={1.25 / scale}
+                dash={[5 / scale, 4 / scale]}
+                opacity={0.8}
+                listening={false}
+              />
+            ))}
+            {activeTool === 'select' && selectedContentIds.length > 0 && (
+              <Transformer
+                ref={transformerRef}
+                rotateEnabled={false}
+                flipEnabled={false}
+                keepRatio={keepResizeRatio}
+                enabledAnchors={
+                  keepResizeRatio
+                    ? [
+                        'top-left',
+                        'top-right',
+                        'bottom-left',
+                        'bottom-right',
+                      ]
+                    : [
+                        'top-left',
+                        'top-center',
+                        'top-right',
+                        'middle-left',
+                        'middle-right',
+                        'bottom-left',
+                        'bottom-center',
+                        'bottom-right',
+                      ]
+                }
+                borderStroke="#5b5bd6"
+                borderStrokeWidth={1.5 / scale}
+                anchorFill="#ffffff"
+                anchorStroke="#5b5bd6"
+                anchorStrokeWidth={1.5 / scale}
+                anchorSize={11 / scale}
+                anchorCornerRadius={3 / scale}
+                padding={5 / scale}
+                ignoreStroke
+                boundBoxFunc={(oldBox, newBox) =>
+                  Math.abs(newBox.width) < 16 ||
+                  Math.abs(newBox.height) < 16
+                    ? oldBox
+                    : newBox
+                }
+                onTransformStart={() => {
+                  resizePositionsRef.current.clear();
+                  transformerRef.current?.nodes().forEach((node) => {
+                    resizePositionsRef.current.set(node.id(), node.position());
+                  });
+                }}
+                onTransformEnd={saveResizedContents}
+              />
+            )}
           </Layer>
         </Stage>
+
+        {textEditor && (
+          <form
+            className="canvas-text-editor"
+            style={{
+              left: Math.min(textEditor.x * scale, PAGE_WIDTH * scale - 230),
+              top: Math.min(textEditor.y * scale, PAGE_HEIGHT * scale - 48),
+            }}
+            onSubmit={(event) => {
+              event.preventDefault();
+              submitText();
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            <input
+              autoFocus
+              value={textEditor.value}
+              placeholder="Écrivez votre texte…"
+              aria-label="Texte à ajouter"
+              onChange={(event) =>
+                setTextEditor((editor) =>
+                  editor ? { ...editor, value: event.target.value } : null,
+                )
+              }
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') setTextEditor(null);
+              }}
+            />
+            <button type="submit" aria-label="Ajouter le texte">✓</button>
+          </form>
+        )}
+        {checkboxLabelEditor && (
+          <form
+            className="canvas-checkbox-label-editor"
+            style={{
+              left: checkboxLabelEditor.x * scale,
+              top: Math.min(
+                checkboxLabelEditor.y * scale,
+                PAGE_HEIGHT * scale - 48,
+              ),
+            }}
+            onSubmit={(event) => {
+              event.preventDefault();
+              finishCheckboxLabel(checkboxLabelEditor.value);
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            <input
+              autoFocus
+              value={checkboxLabelEditor.value}
+              placeholder="Libellé facultatif"
+              aria-label="Libellé facultatif de la case"
+              onChange={(event) =>
+                setCheckboxLabelEditor((editor) =>
+                  editor ? { ...editor, value: event.target.value } : null,
+                )
+              }
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                  event.preventDefault();
+                  cancelCheckboxLabel();
+                }
+              }}
+            />
+            <button
+              className="checkbox-label-skip"
+              type="button"
+              onClick={() => finishCheckboxLabel()}
+            >
+              {checkboxLabelEditor.initialValue ? 'Sans texte' : 'Passer'}
+            </button>
+            <button type="submit" aria-label="Valider le libellé">✓</button>
+          </form>
+        )}
       </div>
     </main>
   );

@@ -1,8 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Layer, Line, Rect, Stage } from 'react-konva';
+import { Layer, Rect, Stage } from 'react-konva';
 import { useEditorStore } from '../../../store/useEditorStore';
-import type { PrototypeInteraction, Stroke } from '../../../types/drawing';
+import type {
+  CanvasContent,
+  PrototypeInteraction,
+} from '../../../types/drawing';
+import { CanvasContentShape } from '../../canvas/components/CanvasContentShape';
+import { getCombinedBounds } from '../../canvas/utils/contentGeometry';
 
 const PAGE_WIDTH = 960;
 const PAGE_HEIGHT = 640;
@@ -15,34 +20,28 @@ interface SimulationViewProps {
 
 function getInteractionBounds(
   interaction: PrototypeInteraction,
-  strokes: Stroke[],
+  contents: CanvasContent[],
 ) {
-  // La zone cliquable est la boîte qui englobe tous les traits liés.
-  const linkedStrokes = strokes.filter((stroke) =>
-    interaction.contentIds.includes(stroke.id),
+  // La zone cliquable est la boîte qui englobe tous les contenus liés.
+  const linkedContents = contents.filter((content) =>
+    interaction.contentIds.includes(content.id),
   );
-  if (linkedStrokes.length === 0) return null;
-
-  const xs = linkedStrokes.flatMap((stroke) =>
-    stroke.points.filter((_, index) => index % 2 === 0),
-  );
-  const ys = linkedStrokes.flatMap((stroke) =>
-    stroke.points.filter((_, index) => index % 2 === 1),
-  );
+  const bounds = getCombinedBounds(linkedContents);
+  if (!bounds) return null;
   const padding = 12;
 
   return {
-    x: Math.min(...xs) - padding,
-    y: Math.min(...ys) - padding,
-    width: Math.max(...xs) - Math.min(...xs) + padding * 2,
-    height: Math.max(...ys) - Math.min(...ys) + padding * 2,
+    x: bounds.x - padding,
+    y: bounds.y - padding,
+    width: bounds.width + padding * 2,
+    height: bounds.height + padding * 2,
   };
 }
 
 export function SimulationView({ open, onClose }: SimulationViewProps) {
   const workspaceRef = useRef<HTMLDivElement>(null);
   const windows = useEditorStore((state) => state.windows);
-  const allStrokes = useEditorStore((state) => state.strokes);
+  const allContents = useEditorStore((state) => state.contents);
   const allInteractions = useEditorStore((state) => state.interactions);
 
   const [currentWindowId, setCurrentWindowId] = useState('');
@@ -53,9 +52,10 @@ export function SimulationView({ open, onClose }: SimulationViewProps) {
   const [scale, setScale] = useState(1);
 
   const currentWindow = windows.find((window) => window.id === currentWindowId);
-  const strokes = useMemo(
-    () => allStrokes.filter((stroke) => stroke.windowId === currentWindowId),
-    [allStrokes, currentWindowId],
+  const contents = useMemo(
+    () =>
+      allContents.filter((content) => content.windowId === currentWindowId),
+    [allContents, currentWindowId],
   );
   const interactions = useMemo(
     () =>
@@ -63,6 +63,22 @@ export function SimulationView({ open, onClose }: SimulationViewProps) {
         (interaction) => interaction.sourceWindowId === currentWindowId,
       ),
     [allInteractions, currentWindowId],
+  );
+  const canvasContents = useMemo(
+    () =>
+      contents.filter(
+        (content) =>
+          content.type !== 'checkbox' && content.type !== 'text-input',
+      ),
+    [contents],
+  );
+  const widgetContents = useMemo(
+    () =>
+      contents.filter(
+        (content) =>
+          content.type === 'checkbox' || content.type === 'text-input',
+      ),
+    [contents],
   );
 
   useEffect(() => {
@@ -173,27 +189,17 @@ export function SimulationView({ open, onClose }: SimulationViewProps) {
           className="simulation-page"
           style={{ width: PAGE_WIDTH * scale, height: PAGE_HEIGHT * scale }}
         >
-          {strokes.length === 0 && (
+          {contents.length === 0 && (
             <div className="simulation-empty-state">Cette fenêtre est vide</div>
           )}
           <Stage width={PAGE_WIDTH * scale} height={PAGE_HEIGHT * scale}>
             <Layer scaleX={scale} scaleY={scale}>
               <Rect width={PAGE_WIDTH} height={PAGE_HEIGHT} fill="#ffffff" />
-              {strokes.map((stroke) => (
-                <Line
-                  key={stroke.id}
-                  points={stroke.points}
-                  stroke={stroke.color}
-                  strokeWidth={stroke.width}
-                  opacity={stroke.opacity}
-                  lineCap="round"
-                  lineJoin="round"
-                  tension={0.35}
-                  listening={false}
-                />
+              {canvasContents.map((content) => (
+                <CanvasContentShape key={content.id} content={content} />
               ))}
               {interactions.map((interaction) => {
-                const bounds = getInteractionBounds(interaction, strokes);
+                const bounds = getInteractionBounds(interaction, contents);
                 if (!bounds) return null;
                 const isHovered = interaction.id === hoveredInteractionId;
 
@@ -224,6 +230,49 @@ export function SimulationView({ open, onClose }: SimulationViewProps) {
               })}
             </Layer>
           </Stage>
+          {widgetContents.map((content) =>
+            content.type === 'checkbox' ? (
+              <label
+                key={content.id}
+                className="simulation-checkbox-widget"
+                style={{
+                  left: content.x * scale,
+                  top: content.y * scale,
+                  width: content.width * scale,
+                  height: content.height * scale,
+                  gap: 9 * scale,
+                  fontSize: Math.max(10, 16 * scale),
+                }}
+              >
+                <input
+                  type="checkbox"
+                  defaultChecked={content.checked}
+                  style={{
+                    width: Math.max(14, 20 * scale),
+                    height: Math.max(14, 20 * scale),
+                  }}
+                />
+                {content.label && <span>{content.label}</span>}
+              </label>
+            ) : (
+              <input
+                key={content.id}
+                className="simulation-text-input-widget"
+                type="text"
+                placeholder={content.placeholder}
+                aria-label={content.placeholder}
+                style={{
+                  left: content.x * scale,
+                  top: content.y * scale,
+                  width: content.width * scale,
+                  height: content.height * scale,
+                  paddingInline: Math.max(8, 13 * scale),
+                  borderRadius: Math.max(5, 8 * scale),
+                  fontSize: Math.max(11, 15 * scale),
+                }}
+              />
+            ),
+          )}
         </div>
       </main>
     </div>,

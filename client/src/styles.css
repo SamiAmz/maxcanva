@@ -152,9 +152,18 @@ button {
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
+  overflow-y: auto;
   padding-top: 24px;
   border-right: 1px solid #e1e5eb;
   background: rgba(255, 255, 255, 0.82);
+}
+
+.tool-rail-divider {
+  width: 34px;
+  height: 1px;
+  flex: 0 0 auto;
+  margin: 2px 0;
+  background: #e1e5eb;
 }
 
 .tool-button {
@@ -184,12 +193,28 @@ button {
 .tool-icon {
   font-size: 25px;
   line-height: 1;
+}
+
+.tool-pencil-icon {
   transform: rotate(-8deg);
 }
 
-.selection-icon {
+.tool-select-icon {
   font-size: 23px;
-  transform: none;
+}
+
+.tool-text-icon {
+  font-size: 20px;
+  font-weight: 750;
+}
+
+.tool-checkbox-icon {
+  font-size: 21px;
+}
+
+.tool-text-input-icon {
+  font-size: 27px;
+  transform: scaleX(1.08);
 }
 
 .tool-name {
@@ -393,8 +418,12 @@ button {
   touch-action: none;
 }
 
-.canvas-workspace.is-selecting .drawing-page {
+.canvas-workspace.tool-select .drawing-page {
   cursor: default;
+}
+
+.canvas-workspace.tool-text .drawing-page {
+  cursor: text;
 }
 
 .drawing-page canvas {
@@ -419,8 +448,8 @@ button {
   font-size: 21px;
 }
 
-/* Barres contextuelles du crayon et de la sélection */
-.pencil-controls {
+/* Barres contextuelles des outils de dessin et de la sélection */
+.drawing-controls {
   position: fixed;
   z-index: 20;
   bottom: 22px;
@@ -437,6 +466,56 @@ button {
     0 2px 6px rgba(25, 31, 42, 0.06);
   transform: translateX(-50%);
   backdrop-filter: blur(16px);
+}
+
+.canvas-text-editor,
+.canvas-checkbox-label-editor {
+  position: absolute;
+  z-index: 8;
+  display: flex;
+  width: 220px;
+  height: 42px;
+  overflow: hidden;
+  border: 2px solid #5b5bd6;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(31, 41, 55, 0.18);
+}
+
+.canvas-checkbox-label-editor {
+  width: 292px;
+}
+
+.canvas-text-editor input,
+.canvas-checkbox-label-editor input {
+  min-width: 0;
+  flex: 1;
+  padding: 0 11px;
+  border: 0;
+  outline: 0;
+  color: #273247;
+  font-size: 14px;
+}
+
+.canvas-text-editor button,
+.canvas-checkbox-label-editor button {
+  width: 40px;
+  border: 0;
+  color: #fff;
+  background: #5b5bd6;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.canvas-checkbox-label-editor .checkbox-label-skip {
+  width: 58px;
+  color: #687386;
+  background: #f2f4f7;
+  font-size: 10px;
+}
+
+.canvas-checkbox-label-editor .checkbox-label-skip:hover {
+  background: #e8ebf0;
 }
 
 .selection-controls {
@@ -518,6 +597,45 @@ button {
 
 .link-selection-button:disabled {
   opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.grouping-actions {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid #e3e5ea;
+  border-radius: 10px;
+  background: #f5f6f8;
+}
+
+.grouping-selection-button {
+  display: flex;
+  height: 28px;
+  align-items: center;
+  gap: 5px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 7px;
+  color: #566174;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.grouping-selection-button > span:first-child {
+  color: #4f46c8;
+  font-size: 16px;
+}
+
+.grouping-selection-button:hover:not(:disabled) {
+  color: #3f3ca5;
+  background: #e9e7ff;
+}
+
+.grouping-selection-button:disabled {
+  opacity: 0.38;
   cursor: not-allowed;
 }
 
@@ -840,6 +958,54 @@ button {
   display: block;
 }
 
+.simulation-checkbox-widget,
+.simulation-text-input-widget {
+  position: absolute;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.simulation-checkbox-widget {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  color: #374151;
+  font-family: Inter, Arial, sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+
+.simulation-checkbox-widget input {
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: #5b5bd6;
+  cursor: pointer;
+}
+
+.simulation-checkbox-widget span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.simulation-text-input-widget {
+  border: 1.5px solid #aeb7c4;
+  outline: 0;
+  color: #273247;
+  background: #fff;
+  font-family: Inter, Arial, sans-serif;
+}
+
+.simulation-text-input-widget::placeholder {
+  color: #98a1af;
+}
+
+.simulation-text-input-widget:focus {
+  border-color: #5b5bd6;
+  box-shadow: 0 0 0 3px rgba(91, 91, 214, 0.16);
+}
+
 .simulation-empty-state {
   position: absolute;
   z-index: 1;
@@ -1101,7 +1267,7 @@ button:focus-visible,
     grid-row: 3;
   }
 
-  .pencil-controls {
+  .drawing-controls {
     right: 12px;
     bottom: 12px;
     left: 72px;
@@ -1131,6 +1297,16 @@ button:focus-visible,
   .link-selection-button,
   .delete-selection-button {
     padding: 0 9px;
+  }
+
+  .grouping-selection-button {
+    width: 30px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .grouping-selection-button .button-label {
+    display: none;
   }
 
   .interaction-dialog {

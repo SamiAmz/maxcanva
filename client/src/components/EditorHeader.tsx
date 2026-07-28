@@ -1,8 +1,19 @@
 import { useEditorStore } from '../store/useEditorStore';
+import type { Tool } from '../types/drawing';
 
 interface EditorHeaderProps {
   onStartSimulation: () => void;
 }
+
+const TOOL_LABELS = {
+  pencil: 'Crayon actif',
+  select: 'Sélection active',
+  rectangle: 'Rectangle actif',
+  circle: 'Cercle actif',
+  text: 'Texte actif',
+  checkbox: 'Case à cocher active',
+  'text-input': 'Champ de texte actif',
+} satisfies Record<Tool, string>;
 
 export function EditorHeader({ onStartSimulation }: EditorHeaderProps) {
   const activeWindow = useEditorStore((state) =>
@@ -26,7 +37,7 @@ export function EditorHeader({ onStartSimulation }: EditorHeaderProps) {
       <div className="header-actions">
         <div className="tool-status" aria-label="Outil actuellement sélectionné">
           <span aria-hidden="true" />
-          {activeTool === 'pencil' ? 'Crayon actif' : 'Sélection active'}
+          {TOOL_LABELS[activeTool]}
         </div>
         <button
           className="start-simulation-button"

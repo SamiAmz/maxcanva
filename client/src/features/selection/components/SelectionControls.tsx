@@ -4,13 +4,34 @@ import { InteractionDialog } from '../../interactions/components/InteractionDial
 
 export function SelectionControls() {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const selectedIds = useEditorStore((state) => state.selectedStrokeIds);
+  const selectedIds = useEditorStore((state) => state.selectedContentIds);
   const selectedCount = useEditorStore(
-    (state) => state.selectedStrokeIds.length,
+    (state) => state.selectedContentIds.length,
   );
+  const groups = useEditorStore((state) => state.groups);
   const interactions = useEditorStore((state) => state.interactions);
   const deleteSelected = useEditorStore((state) => state.deleteSelected);
+  const groupSelected = useEditorStore((state) => state.groupSelected);
+  const ungroupSelected = useEditorStore((state) => state.ungroupSelected);
   const clearSelection = useEditorStore((state) => state.clearSelection);
+  const selectedGroup = useMemo(
+    () =>
+      groups.find(
+        (group) =>
+          group.contentIds.length === selectedIds.length &&
+          group.contentIds.every((id) => selectedIds.includes(id)),
+      ),
+    [groups, selectedIds],
+  );
+  const selectedGroups = useMemo(
+    () =>
+      groups.filter((group) =>
+        group.contentIds.every((id) => selectedIds.includes(id)),
+      ),
+    [groups, selectedIds],
+  );
+  const canGroup = selectedCount >= 2 && !selectedGroup;
+  const canUngroup = selectedGroups.length > 0;
   const hasInteraction = useMemo(
     () =>
       interactions.some(
@@ -50,10 +71,38 @@ export function SelectionControls() {
       <span className="selection-summary-icon" aria-hidden="true">↖</span>
       <span className="selection-summary">
         {selectedCount > 0
-          ? `${selectedCount} ${selectedCount > 1 ? 'éléments sélectionnés' : 'élément sélectionné'}`
-          : 'Cliquez ou encadrez des traits'}
+          ? selectedGroup
+            ? `Groupe · ${selectedCount} éléments`
+            : selectedGroups.length > 0
+              ? `${selectedCount} éléments · ${selectedGroups.length} ${selectedGroups.length > 1 ? 'groupes' : 'groupe'}`
+            : `${selectedCount} ${selectedCount > 1 ? 'éléments sélectionnés' : 'élément sélectionné'}`
+          : 'Cliquez ou encadrez des contenus'}
       </span>
       <div className="control-divider" />
+      <div className="grouping-actions" aria-label="Actions de groupe">
+        <button
+          className="grouping-selection-button"
+          type="button"
+          disabled={!canGroup}
+          aria-label="Grouper la sélection"
+          title="Réunir la sélection en un groupe"
+          onClick={groupSelected}
+        >
+          <span aria-hidden="true">⊞</span>
+          <span className="button-label">Grouper</span>
+        </button>
+        <button
+          className="grouping-selection-button"
+          type="button"
+          disabled={!canUngroup}
+          aria-label="Dégrouper la sélection"
+          title="Séparer les groupes sélectionnés"
+          onClick={ungroupSelected}
+        >
+          <span aria-hidden="true">⊟</span>
+          <span className="button-label">Dégrouper</span>
+        </button>
+      </div>
       <button
         className="link-selection-button"
         type="button"

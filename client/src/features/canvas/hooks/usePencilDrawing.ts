@@ -8,12 +8,12 @@ export function usePencilDrawing(scale: number) {
   const pointsRef = useRef<number[]>([]);
 
   const activeTool = useEditorStore((state) => state.activeTool);
-  const pencilColor = useEditorStore((state) => state.pencilColor);
-  const pencilWidth = useEditorStore((state) => state.pencilWidth);
+  const drawingColor = useEditorStore((state) => state.drawingColor);
+  const drawingWidth = useEditorStore((state) => state.drawingWidth);
   const activeWindowId = useEditorStore((state) => state.activeWindowId);
-  const addStroke = useEditorStore((state) => state.addStroke);
-  const updateStrokePoints = useEditorStore(
-    (state) => state.updateStrokePoints,
+  const addContent = useEditorStore((state) => state.addContent);
+  const updatePencilPoints = useEditorStore(
+    (state) => state.updatePencilPoints,
   );
 
   const getPoint = (event: KonvaEventObject<PointerEvent>) => {
@@ -42,13 +42,13 @@ export function usePencilDrawing(scale: number) {
 
     activeStrokeId.current = id;
     pointsRef.current = points;
-    addStroke({
+    addContent({
       id,
       windowId: activeWindowId,
-      tool: 'pencil',
+      type: 'pencil',
       points,
-      color: pencilColor,
-      width: pencilWidth,
+      color: drawingColor,
+      strokeWidth: drawingWidth,
       opacity: 1,
     });
   };
@@ -68,7 +68,7 @@ export function usePencilDrawing(scale: number) {
     if (distance < 0.8) return;
 
     pointsRef.current = [...pointsRef.current, point.x, point.y];
-    updateStrokePoints(activeStrokeId.current, pointsRef.current);
+    updatePencilPoints(activeStrokeId.current, pointsRef.current);
   };
 
   const stopDrawing = () => {

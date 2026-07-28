@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { DrawingCanvas } from './features/canvas/components/DrawingCanvas';
-import { PencilControls } from './features/canvas/components/PencilControls';
+import { DrawingControls } from './features/canvas/components/DrawingControls';
 import { EditorHeader } from './components/EditorHeader';
 import { ToolRail } from './components/ToolRail';
 import { WindowsPanel } from './features/windows/components/WindowsPanel';
@@ -12,6 +12,12 @@ import './styles.css';
 export default function App() {
   const [simulationOpen, setSimulationOpen] = useState(false);
   const activeTool = useEditorStore((state) => state.activeTool);
+  const showDrawingControls = [
+    'pencil',
+    'rectangle',
+    'circle',
+    'text',
+  ].includes(activeTool);
 
   return (
     <div className="editor-shell">
@@ -20,7 +26,11 @@ export default function App() {
       <WindowsPanel />
       <DrawingCanvas />
       {/* La barre contextuelle dépend de l'outil actif. */}
-      {activeTool === 'pencil' ? <PencilControls /> : <SelectionControls />}
+      {activeTool === 'select' ? (
+        <SelectionControls />
+      ) : showDrawingControls ? (
+        <DrawingControls />
+      ) : null}
       <SimulationView
         open={simulationOpen}
         onClose={() => setSimulationOpen(false)}

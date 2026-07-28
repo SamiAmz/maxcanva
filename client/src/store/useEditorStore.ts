@@ -1,37 +1,58 @@
 import { create } from 'zustand';
 import type {
+  CanvasContent,
+  ContentGroup,
   InteractionType,
   PrototypeInteraction,
   PrototypeWindow,
-  Stroke,
   Tool,
 } from '../types/drawing';
+import {
+  moveContent,
+  transformContent,
+  type ContentTransform,
+} from '../features/canvas/utils/contentGeometry';
 
 const INITIAL_WINDOW: PrototypeWindow = {
   id: 'window-1',
   name: 'Fenêtre 1',
 };
 
+function expandSelection(ids: string[], groups: ContentGroup[]) {
+  const expandedIds = new Set(ids);
+
+  groups.forEach((group) => {
+    if (group.contentIds.some((id) => expandedIds.has(id))) {
+      group.contentIds.forEach((id) => expandedIds.add(id));
+    }
+  });
+  return [...expandedIds];
+}
+
 // Source de vérité partagée par l'éditeur, les miniatures et la simulation.
 interface EditorState {
   activeTool: Tool;
-  pencilColor: string;
-  pencilWidth: number;
+  drawingColor: string;
+  drawingWidth: number;
   windows: PrototypeWindow[];
   activeWindowId: string;
-  strokes: Stroke[];
+  contents: CanvasContent[];
+  groups: ContentGroup[];
   interactions: PrototypeInteraction[];
-  selectedStrokeIds: string[];
+  selectedContentIds: string[];
   setActiveTool: (tool: Tool) => void;
-  setPencilColor: (color: string) => void;
-  setPencilWidth: (width: number) => void;
+  setDrawingColor: (color: string) => void;
+  setDrawingWidth: (width: number) => void;
   createWindow: () => void;
   selectWindow: (id: string) => void;
-  selectStroke: (id: string, additive?: boolean) => void;
+  selectContent: (id: string, additive?: boolean) => void;
   setSelection: (ids: string[], additive?: boolean) => void;
   clearSelection: () => void;
   deleteSelected: () => void;
-  moveStrokes: (ids: string[], x: number, y: number) => void;
+  groupSelected: () => void;
+  ungroupSelected: () => void;
+  moveContents: (ids: string[], x: number, y: number) => void;
+  transformContents: (transforms: ContentTransform[]) => void;
   saveInteraction: (interaction: {
     sourceWindowId: string;
     targetWindowId?: string;
@@ -40,28 +61,29 @@ interface EditorState {
     type: InteractionType;
   }) => void;
   removeInteractionsForContents: (contentIds: string[]) => void;
-  addStroke: (stroke: Stroke) => void;
-  updateStrokePoints: (id: string, points: number[]) => void;
+  addContent: (content: CanvasContent) => void;
+  updatePencilPoints: (id: string, points: number[]) => void;
+  updateCheckboxLabel: (id: string, label: string) => void;
 }
 
 export const useEditorStore = create<EditorState>((set) => ({
   activeTool: 'pencil',
-  pencilColor: '#1f2937',
-  pencilWidth: 4,
+  drawingColor: '#1f2937',
+  drawingWidth: 4,
   windows: [INITIAL_WINDOW],
   activeWindowId: INITIAL_WINDOW.id,
-  strokes: [],
+  contents: [],
+  groups: [],
   interactions: [],
-  selectedStrokeIds: [],
+  selectedContentIds: [],
   setActiveTool: (activeTool) =>
     set((state) => ({
       activeTool,
-      // Une sélection n'est pas visible ni modifiable avec le crayon.
-      selectedStrokeIds:
-        activeTool === 'pencil' ? [] : state.selectedStrokeIds,
+      selectedContentIds:
+        activeTool === 'select' ? state.selectedContentIds : [],
     })),
-  setPencilColor: (pencilColor) => set({ pencilColor }),
-  setPencilWidth: (pencilWidth) => set({ pencilWidth }),
+  setDrawingColor: (drawingColor) => set({ drawingColor }),
+  setDrawingWidth: (drawingWidth) => set({ drawingWidth }),
   createWindow: () =>
     set((state) => {
       const id = crypto.randomUUID();
@@ -72,41 +94,73 @@ export const useEditorStore = create<EditorState>((set) => ({
           { id, name: `Fenêtre ${state.windows.length + 1}` },
         ],
         activeWindowId: id,
-        selectedStrokeIds: [],
+        selectedContentIds: [],
       };
     }),
   selectWindow: (activeWindowId) =>
-    set({ activeWindowId, selectedStrokeIds: [] }),
-  selectStroke: (id, additive = false) =>
+    set({ activeWindowId, selectedContentIds: [] }),
+  selectContent: (id, additive = false) =>
     set((state) => {
+      const group = state.groups.find((item) => item.contentIds.includes(id));
+      const idsToToggle = group?.contentIds ?? [id];
+
       if (additive) {
+        const allSelected = idsToToggle.every((contentId) =>
+          state.selectedContentIds.includes(contentId),
+        );
         return {
-          selectedStrokeIds: state.selectedStrokeIds.includes(id)
-            ? state.selectedStrokeIds.filter((strokeId) => strokeId !== id)
-            : [...state.selectedStrokeIds, id],
+          selectedContentIds: allSelected
+            ? state.selectedContentIds.filter(
+                (contentId) => !idsToToggle.includes(contentId),
+              )
+            : [...new Set([...state.selectedContentIds, ...idsToToggle])],
+        };
+      }
+
+      if (group) {
+        const isOnlySelectedGroup =
+          state.selectedContentIds.length === idsToToggle.length &&
+          idsToToggle.every((contentId) =>
+            state.selectedContentIds.includes(contentId),
+          );
+        return {
+          selectedContentIds: isOnlySelectedGroup
+            ? state.selectedContentIds
+            : idsToToggle,
         };
       }
 
       return {
-        selectedStrokeIds: state.selectedStrokeIds.includes(id)
-          ? state.selectedStrokeIds
+        selectedContentIds: state.selectedContentIds.includes(id)
+          ? state.selectedContentIds
           : [id],
       };
     }),
   setSelection: (ids, additive = false) =>
-    set((state) => ({
-      selectedStrokeIds: additive
-        ? [...new Set([...state.selectedStrokeIds, ...ids])]
-        : ids,
-    })),
-  clearSelection: () => set({ selectedStrokeIds: [] }),
+    set((state) => {
+      const nextIds = additive
+        ? [...new Set([...state.selectedContentIds, ...ids])]
+        : ids;
+      return { selectedContentIds: expandSelection(nextIds, state.groups) };
+    }),
+  clearSelection: () => set({ selectedContentIds: [] }),
   deleteSelected: () =>
     set((state) => {
-      const selectedIds = new Set(state.selectedStrokeIds);
+      const selectedIds = new Set(state.selectedContentIds);
 
       return {
-        strokes: state.strokes.filter((stroke) => !selectedIds.has(stroke.id)),
-        // Évite de conserver des interactions qui référencent des traits supprimés.
+        contents: state.contents.filter(
+          (content) => !selectedIds.has(content.id),
+        ),
+        groups: state.groups
+          .map((group) => ({
+            ...group,
+            contentIds: group.contentIds.filter(
+              (contentId) => !selectedIds.has(contentId),
+            ),
+          }))
+          .filter((group) => group.contentIds.length > 1),
+        // Évite de conserver des interactions qui référencent du contenu supprimé.
         interactions: state.interactions
           .map((interaction) => ({
             ...interaction,
@@ -115,27 +169,67 @@ export const useEditorStore = create<EditorState>((set) => ({
             ),
           }))
           .filter((interaction) => interaction.contentIds.length > 0),
-        selectedStrokeIds: [],
+        selectedContentIds: [],
       };
     }),
-  moveStrokes: (ids, x, y) =>
+  groupSelected: () =>
+    set((state) => {
+      const contentIds = state.selectedContentIds.filter((id) =>
+        state.contents.some(
+          (content) =>
+            content.id === id && content.windowId === state.activeWindowId,
+        ),
+      );
+      if (contentIds.length < 2) return state;
+
+      const selectedIds = new Set(contentIds);
+      return {
+        groups: [
+          ...state.groups.filter(
+            (group) =>
+              !group.contentIds.some((id) => selectedIds.has(id)),
+          ),
+          {
+            id: crypto.randomUUID(),
+            windowId: state.activeWindowId,
+            contentIds,
+          },
+        ],
+      };
+    }),
+  ungroupSelected: () =>
+    set((state) => {
+      const selectedIds = new Set(state.selectedContentIds);
+      return {
+        groups: state.groups.filter(
+          (group) =>
+            !group.contentIds.some((id) => selectedIds.has(id)),
+        ),
+      };
+    }),
+  moveContents: (ids, x, y) =>
     set((state) => ({
-      strokes: state.strokes.map((stroke) =>
-        ids.includes(stroke.id)
-          ? {
-              ...stroke,
-              // Les indices pairs sont des x et les indices impairs des y.
-              points: stroke.points.map((point, index) =>
-                point + (index % 2 === 0 ? x : y),
-              ),
-            }
-          : stroke,
+      contents: state.contents.map((content) =>
+        ids.includes(content.id) ? moveContent(content, x, y) : content,
       ),
     })),
+  transformContents: (transforms) =>
+    set((state) => {
+      const transformsById = new Map(
+        transforms.map((transform) => [transform.id, transform]),
+      );
+
+      return {
+        contents: state.contents.map((content) => {
+          const transform = transformsById.get(content.id);
+          return transform ? transformContent(content, transform) : content;
+        }),
+      };
+    }),
   saveInteraction: (newInteraction) =>
     set((state) => {
       const selectedIds = new Set(newInteraction.contentIds);
-      // Un trait ne peut appartenir qu'à une seule interaction à la fois.
+      // Un contenu ne peut appartenir qu'à une seule interaction à la fois.
       const remainingInteractions = state.interactions
         .map((interaction) => ({
           ...interaction,
@@ -167,12 +261,28 @@ export const useEditorStore = create<EditorState>((set) => ({
           .filter((interaction) => interaction.contentIds.length > 0),
       };
     }),
-  addStroke: (stroke) =>
-    set((state) => ({ strokes: [...state.strokes, stroke] })),
-  updateStrokePoints: (id, points) =>
+  addContent: (content) =>
+    set((state) => ({ contents: [...state.contents, content] })),
+  updatePencilPoints: (id, points) =>
     set((state) => ({
-      strokes: state.strokes.map((stroke) =>
-        stroke.id === id ? { ...stroke, points } : stroke,
+      contents: state.contents.map((content) =>
+        content.id === id && content.type === 'pencil'
+          ? { ...content, points }
+          : content,
+      ),
+    })),
+  updateCheckboxLabel: (id, label) =>
+    set((state) => ({
+      contents: state.contents.map((content) =>
+        content.id === id && content.type === 'checkbox'
+          ? {
+              ...content,
+              label,
+              width: label
+                ? Math.min(320, Math.max(96, 38 + label.length * 8))
+                : 28,
+            }
+          : content,
       ),
     })),
 }));
