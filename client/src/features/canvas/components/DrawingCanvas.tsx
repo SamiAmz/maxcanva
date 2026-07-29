@@ -88,6 +88,7 @@ export function DrawingCanvas() {
     (state) => state.selectedContentIds,
   );
   const drawingColor = useEditorStore((state) => state.drawingColor);
+  const drawingFillColor = useEditorStore((state) => state.drawingFillColor);
   const drawingWidth = useEditorStore((state) => state.drawingWidth);
   const setActiveTool = useEditorStore((state) => state.setActiveTool);
   const selectContent = useEditorStore((state) => state.selectContent);
@@ -260,6 +261,7 @@ export function DrawingCanvas() {
           width,
           height,
           color: drawingColor,
+          fillColor: drawingFillColor,
           strokeWidth: drawingWidth,
           opacity: 1,
         });
@@ -276,6 +278,7 @@ export function DrawingCanvas() {
           radiusX: radius,
           radiusY: radius,
           color: drawingColor,
+          fillColor: drawingFillColor,
           strokeWidth: drawingWidth,
           opacity: 1,
         });
@@ -698,8 +701,14 @@ export function DrawingCanvas() {
             {rectanglePreview && (
               <Rect
                 {...rectanglePreview}
+                fill={
+                  drawingFillColor === 'transparent'
+                    ? undefined
+                    : drawingFillColor
+                }
                 stroke={drawingColor}
                 strokeWidth={drawingWidth}
+                cornerRadius={12}
                 dash={[8, 5]}
                 listening={false}
               />
@@ -709,6 +718,11 @@ export function DrawingCanvas() {
                 x={shapeDraft.startX}
                 y={shapeDraft.startY}
                 radius={circlePreview}
+                fill={
+                  drawingFillColor === 'transparent'
+                    ? undefined
+                    : drawingFillColor
+                }
                 stroke={drawingColor}
                 strokeWidth={drawingWidth}
                 dash={[8, 5]}

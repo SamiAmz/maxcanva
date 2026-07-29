@@ -155,6 +155,172 @@
   height: 30px;
 }
 
+.transparent-swatch {
+  position: relative;
+  overflow: hidden;
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, #d8d7de 25%, transparent 25%),
+    linear-gradient(-45deg, #d8d7de 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #d8d7de 75%),
+    linear-gradient(-45deg, transparent 75%, #d8d7de 75%);
+  background-position:
+    0 0,
+    0 5px,
+    5px -5px,
+    -5px 0;
+  background-size: 10px 10px;
+}
+
+.transparent-swatch::after {
+  position: absolute;
+  width: 2px;
+  height: 30px;
+  background: #e03131;
+  content: "";
+  transform: rotate(45deg);
+}
+
+.shape-style-controls {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.shape-style-group {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding: 5px 7px 6px;
+  border: 1px solid #ecebf0;
+  border-radius: 9px;
+  background: #f8f8fa;
+}
+
+.shape-style-label {
+  color: #85838d;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.035em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.shape-style-group .color-options,
+.shape-style-group .width-options {
+  gap: 4px;
+}
+
+.shape-style-group .color-swatch,
+.shape-style-group .custom-color {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border-color: #dddae3;
+  border-radius: 6px;
+}
+
+.shape-style-group .color-swatch:hover,
+.shape-style-group .custom-color:hover {
+  border-color: #aaa6ba;
+  transform: translateY(-1px);
+}
+
+.shape-style-group .color-swatch.is-selected {
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 3px #6965db;
+}
+
+.shape-style-group .width-button {
+  width: 32px;
+  height: 24px;
+  border-radius: 6px;
+}
+
+.shape-style-group .custom-color {
+  background: conic-gradient(
+    #ff6b6b,
+    #ffd43b,
+    #51cf66,
+    #339af0,
+    #845ef7,
+    #ff6b6b
+  );
+}
+
+.shape-style-group .custom-color::after {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.drawing-controls {
+  padding: 6px;
+}
+
+.selection-controls:has(.shape-style-controls) {
+  gap: 8px;
+  padding: 6px;
+}
+
+.layering-control {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 5px 6px 6px;
+  border: 1px solid #ecebf0;
+  border-radius: 9px;
+  background: #f8f8fa;
+}
+
+.layering-label {
+  color: #85838d;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.035em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.layering-actions {
+  display: flex;
+  gap: 3px;
+}
+
+.layering-actions button {
+  display: grid;
+  width: 28px;
+  height: 24px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  color: #55525f;
+  background: #fff;
+  cursor: pointer;
+}
+
+.layering-actions button:hover:not(:disabled) {
+  color: #4f4bc4;
+  background: #e9e7ff;
+}
+
+.layering-actions button:disabled {
+  color: #bbb9c2;
+  background: #f0eff3;
+  cursor: not-allowed;
+}
+
+.layering-actions svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
 .canvas-text-editor {
   width: 260px;
   height: 38px;

@@ -34,6 +34,7 @@ export interface RectangleContent extends BaseContent {
   y: number;
   width: number;
   height: number;
+  fillColor: string;
   strokeWidth: number;
 }
 
@@ -43,6 +44,7 @@ export interface CircleContent extends BaseContent {
   y: number;
   radiusX: number;
   radiusY: number;
+  fillColor: string;
   strokeWidth: number;
 }
 

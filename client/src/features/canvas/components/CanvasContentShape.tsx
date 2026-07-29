@@ -65,6 +65,33 @@ function drawRoughShape(
   });
 }
 
+function fillRoundedRectangle(
+  context: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  radius: number,
+  fillColor: string,
+) {
+  if (fillColor === 'transparent') return;
+  const cornerRadius = Math.min(radius, width / 2, height / 2);
+
+  context.save();
+  context.fillStyle = fillColor;
+  context.beginPath();
+  context.moveTo(cornerRadius, 0);
+  context.lineTo(width - cornerRadius, 0);
+  context.quadraticCurveTo(width, 0, width, cornerRadius);
+  context.lineTo(width, height - cornerRadius);
+  context.quadraticCurveTo(width, height, width - cornerRadius, height);
+  context.lineTo(cornerRadius, height);
+  context.quadraticCurveTo(0, height, 0, height - cornerRadius);
+  context.lineTo(0, cornerRadius);
+  context.quadraticCurveTo(0, 0, cornerRadius, 0);
+  context.closePath();
+  context.fill();
+  context.restore();
+}
+
 export function CanvasContentShape({
   content,
   interactive = false,
@@ -105,11 +132,22 @@ export function CanvasContentShape({
   }
 
   if (content.type === 'rectangle') {
-    const drawable = roughGenerator.rectangle(
-      1,
-      1,
-      Math.max(0, content.width - 2),
-      Math.max(0, content.height - 2),
+    const radius = Math.min(12, content.width / 4, content.height / 4);
+    const right = Math.max(1, content.width - 1);
+    const bottom = Math.max(1, content.height - 1);
+    const drawable = roughGenerator.path(
+      [
+        `M ${radius + 1} 1`,
+        `L ${right - radius} 1`,
+        `Q ${right} 1 ${right} ${radius + 1}`,
+        `L ${right} ${bottom - radius}`,
+        `Q ${right} ${bottom} ${right - radius} ${bottom}`,
+        `L ${radius + 1} ${bottom}`,
+        `Q 1 ${bottom} 1 ${bottom - radius}`,
+        `L 1 ${radius + 1}`,
+        `Q 1 1 ${radius + 1} 1`,
+        'Z',
+      ].join(' '),
       {
         seed: seedFromId(content.id),
         stroke: content.color,
@@ -128,10 +166,19 @@ export function CanvasContentShape({
         height={content.height}
         opacity={content.opacity}
         fill="rgba(255,255,255,0.001)"
-        sceneFunc={(context) => drawRoughShape(context, drawable)}
+        sceneFunc={(context) => {
+          fillRoundedRectangle(
+            context._context,
+            content.width,
+            content.height,
+            radius,
+            content.fillColor,
+          );
+          drawRoughShape(context, drawable);
+        }}
         hitFunc={(context, shape) => {
           context.beginPath();
-          context.rect(0, 0, content.width, content.height);
+          context.roundRect(0, 0, content.width, content.height, radius);
           context.closePath();
           context.fillStrokeShape(shape);
         }}
@@ -167,7 +214,26 @@ export function CanvasContentShape({
         offsetY={content.radiusY}
         opacity={content.opacity}
         fill="rgba(255,255,255,0.001)"
-        sceneFunc={(context) => drawRoughShape(context, drawable)}
+        sceneFunc={(context) => {
+          if (content.fillColor !== 'transparent') {
+            const canvasContext = context._context;
+            canvasContext.save();
+            canvasContext.fillStyle = content.fillColor;
+            canvasContext.beginPath();
+            canvasContext.ellipse(
+              content.radiusX,
+              content.radiusY,
+              content.radiusX,
+              content.radiusY,
+              0,
+              0,
+              Math.PI * 2,
+            );
+            canvasContext.fill();
+            canvasContext.restore();
+          }
+          drawRoughShape(context, drawable);
+        }}
         hitFunc={(context, shape) => {
           context.beginPath();
           context.ellipse(

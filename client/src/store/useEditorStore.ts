@@ -38,11 +38,69 @@ function getNextWindowNumber(windows: PrototypeWindow[]) {
   return Math.max(highestNumber, windows.length) + 1;
 }
 
+type LayerAction =
+  | 'send-to-back'
+  | 'send-backward'
+  | 'bring-forward'
+  | 'bring-to-front';
+
+function reorderContents(
+  contents: CanvasContent[],
+  activeWindowId: string,
+  selectedContentIds: string[],
+  action: LayerAction,
+) {
+  const selectedIds = new Set(selectedContentIds);
+  const windowContents = contents.filter(
+    (content) => content.windowId === activeWindowId,
+  );
+  const isSelected = (content: CanvasContent) => selectedIds.has(content.id);
+  let reordered = [...windowContents];
+
+  if (action === 'send-to-back') {
+    reordered = [
+      ...windowContents.filter(isSelected),
+      ...windowContents.filter((content) => !isSelected(content)),
+    ];
+  } else if (action === 'bring-to-front') {
+    reordered = [
+      ...windowContents.filter((content) => !isSelected(content)),
+      ...windowContents.filter(isSelected),
+    ];
+  } else if (action === 'send-backward') {
+    for (let index = 1; index < reordered.length; index += 1) {
+      if (isSelected(reordered[index]) && !isSelected(reordered[index - 1])) {
+        [reordered[index - 1], reordered[index]] = [
+          reordered[index],
+          reordered[index - 1],
+        ];
+      }
+    }
+  } else {
+    for (let index = reordered.length - 2; index >= 0; index -= 1) {
+      if (isSelected(reordered[index]) && !isSelected(reordered[index + 1])) {
+        [reordered[index], reordered[index + 1]] = [
+          reordered[index + 1],
+          reordered[index],
+        ];
+      }
+    }
+  }
+
+  let windowIndex = 0;
+  return contents.map((content) =>
+    content.windowId === activeWindowId
+      ? reordered[windowIndex++]
+      : content,
+  );
+}
+
 // Source de vérité partagée par l'éditeur, les miniatures et la simulation.
 interface EditorState {
   projectTitle: string;
   activeTool: Tool;
   drawingColor: string;
+  drawingFillColor: string;
   drawingWidth: number;
   windows: PrototypeWindow[];
   activeWindowId: string;
@@ -54,6 +112,7 @@ interface EditorState {
   setProjectTitle: (title: string) => void;
   setActiveTool: (tool: Tool) => void;
   setDrawingColor: (color: string) => void;
+  setDrawingFillColor: (color: string) => void;
   setDrawingWidth: (width: number) => void;
   createWindow: () => void;
   deleteWindow: (id: string) => void;
@@ -63,6 +122,12 @@ interface EditorState {
   setSelection: (ids: string[], additive?: boolean) => void;
   clearSelection: () => void;
   deleteSelected: () => void;
+  updateSelectedShapeStyle: (style: {
+    color?: string;
+    fillColor?: string;
+    strokeWidth?: number;
+  }) => void;
+  reorderSelected: (action: LayerAction) => void;
   groupSelected: () => void;
   ungroupSelected: () => void;
   moveContents: (ids: string[], x: number, y: number) => void;
@@ -113,7 +178,8 @@ function remember(
 export const useEditorStore = create<EditorState>((set) => ({
   projectTitle: 'Sans titre',
   activeTool: 'pencil',
-  drawingColor: '#1f2937',
+  drawingColor: '#343a40',
+  drawingFillColor: 'transparent',
   drawingWidth: 4,
   windows: [INITIAL_WINDOW],
   activeWindowId: INITIAL_WINDOW.id,
@@ -130,6 +196,7 @@ export const useEditorStore = create<EditorState>((set) => ({
         activeTool === 'select' ? state.selectedContentIds : [],
     })),
   setDrawingColor: (drawingColor) => set({ drawingColor }),
+  setDrawingFillColor: (drawingFillColor) => set({ drawingFillColor }),
   setDrawingWidth: (drawingWidth) => set({ drawingWidth }),
   createWindow: () =>
     set((state) => {
@@ -282,6 +349,56 @@ export const useEditorStore = create<EditorState>((set) => ({
           .filter((interaction) => interaction.contentIds.length > 0),
         selectedContentIds: [],
       });
+    }),
+  updateSelectedShapeStyle: (style) =>
+    set((state) => {
+      const selectedIds = new Set(state.selectedContentIds);
+      if (selectedIds.size === 0) return state;
+
+      return remember(state, {
+        contents: state.contents.map((content) => {
+          if (!selectedIds.has(content.id)) return content;
+
+          if (content.type === 'rectangle' || content.type === 'circle') {
+            return {
+              ...content,
+              ...(style.color !== undefined ? { color: style.color } : {}),
+              ...(style.fillColor !== undefined
+                ? { fillColor: style.fillColor }
+                : {}),
+              ...(style.strokeWidth !== undefined
+                ? { strokeWidth: style.strokeWidth }
+                : {}),
+            };
+          }
+
+          if (content.type === 'pencil') {
+            return {
+              ...content,
+              ...(style.color !== undefined ? { color: style.color } : {}),
+              ...(style.strokeWidth !== undefined
+                ? { strokeWidth: style.strokeWidth }
+                : {}),
+            };
+          }
+
+          return content;
+        }),
+      });
+    }),
+  reorderSelected: (action) =>
+    set((state) => {
+      if (state.selectedContentIds.length === 0) return state;
+      const contents = reorderContents(
+        state.contents,
+        state.activeWindowId,
+        state.selectedContentIds,
+        action,
+      );
+      const changed = contents.some(
+        (content, index) => content.id !== state.contents[index]?.id,
+      );
+      return changed ? remember(state, { contents }) : state;
     }),
   groupSelected: () =>
     set((state) => {
