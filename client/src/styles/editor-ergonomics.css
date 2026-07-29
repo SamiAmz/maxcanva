@@ -1,0 +1,209 @@
+/* Ergonomie de l'éditeur */
+.editor-header {
+  grid-template-columns: minmax(180px, 1fr) auto;
+}
+
+.document-title {
+  display: flex;
+  justify-self: start;
+  min-height: 44px;
+  padding: 4px 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow:
+    0 0 1px rgba(0, 0, 0, 0.14),
+    0 4px 10px rgba(0, 0, 0, 0.05);
+  font-size: 13px;
+}
+
+.project-title-input {
+  width: clamp(110px, 16vw, 240px);
+  height: 34px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 5px;
+  outline: 0;
+  color: var(--ui-text);
+  background: transparent;
+  font-weight: 600;
+}
+
+.project-title-input:hover,
+.project-title-input:focus {
+  background: var(--ui-soft);
+}
+
+.document-title strong {
+  white-space: nowrap;
+}
+
+.header-actions {
+  grid-column: 2;
+}
+
+.undo-button {
+  position: static;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+}
+
+.window-card {
+  position: relative;
+  display: block;
+  padding: 6px;
+}
+
+.window-select-button {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.delete-window-button {
+  position: absolute;
+  z-index: 3;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  color: #6f6e78;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  cursor: pointer;
+}
+
+.window-card:hover .delete-window-button,
+.delete-window-button:focus-visible {
+  opacity: 1;
+}
+
+.delete-window-button:hover:not(:disabled) {
+  color: #c92a3b;
+  background: #fff0f1;
+}
+
+.delete-window-button:disabled {
+  display: none;
+}
+
+.delete-window-button svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.window-name-input {
+  min-width: 0;
+  width: 100%;
+  height: 22px;
+  padding: 0 3px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  outline: 0;
+  color: var(--ui-text);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+}
+
+.window-name-input:hover {
+  border-color: var(--ui-border);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.window-name-input:focus {
+  border-color: #a9a5e8;
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(105, 101, 219, 0.14);
+  text-overflow: clip;
+}
+
+.selection-controls.is-empty {
+  width: max-content;
+  min-height: 44px;
+  gap: 8px;
+  padding: 6px 10px;
+}
+
+.selection-controls.is-empty .selection-summary {
+  color: #777580;
+  font-weight: 500;
+}
+
+.selection-controls.is-empty .selection-summary-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.canvas-text-editor {
+  width: 260px;
+  height: 38px;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.canvas-text-editor input {
+  width: 100%;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  color: var(--ui-text);
+  background: transparent;
+  caret-color: var(--ui-primary);
+  font-family: "Excalifont", sans-serif;
+  font-size: 28px;
+  line-height: 38px;
+}
+
+.canvas-text-editor input::placeholder {
+  color: #a7a5ae;
+  opacity: 0.72;
+}
+
+@media (max-width: 640px) {
+  .editor-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .document-title {
+    display: flex;
+    min-width: 0;
+  }
+
+  .project-title-input {
+    width: min(34vw, 150px);
+  }
+
+  .document-title strong,
+  .title-separator {
+    display: none;
+  }
+
+  .undo-button {
+    display: grid;
+  }
+}

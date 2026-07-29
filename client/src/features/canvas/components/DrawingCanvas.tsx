@@ -112,7 +112,7 @@ export function DrawingCanvas() {
     [contents, selectedContentIds],
   );
   const keepResizeRatio = selectedContents.some(
-    (content) => content.type === 'circle' || content.type === 'text',
+    (content) => content.type === 'text',
   );
 
   const getPoint = (event: KonvaEventObject<PointerEvent>) => {
@@ -273,7 +273,8 @@ export function DrawingCanvas() {
           type: 'circle',
           x: shapeDraft.startX,
           y: shapeDraft.startY,
-          radius,
+          radiusX: radius,
+          radiusY: radius,
           color: drawingColor,
           strokeWidth: drawingWidth,
           opacity: 1,
@@ -798,8 +799,8 @@ export function DrawingCanvas() {
           <form
             className="canvas-text-editor"
             style={{
-              left: Math.min(textEditor.x * scale, PAGE_WIDTH * scale - 230),
-              top: Math.min(textEditor.y * scale, PAGE_HEIGHT * scale - 48),
+              left: Math.min(textEditor.x * scale, PAGE_WIDTH * scale - 260),
+              top: Math.min(textEditor.y * scale, PAGE_HEIGHT * scale - 38),
             }}
             onSubmit={(event) => {
               event.preventDefault();
@@ -818,10 +819,16 @@ export function DrawingCanvas() {
                 )
               }
               onKeyDown={(event) => {
-                if (event.key === 'Escape') setTextEditor(null);
+                if (event.key === 'Escape') {
+                  event.preventDefault();
+                  setTextEditor(null);
+                }
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault();
+                  submitText();
+                }
               }}
             />
-            <button type="submit" aria-label="Ajouter le texte">✓</button>
           </form>
         )}
         {checkboxLabelEditor && (

@@ -1,6 +1,8 @@
 import type { KonvaEventObject } from 'konva/lib/Node';
 import type { Shape as KonvaShape } from 'konva/lib/Shape';
-import { Circle, Line, Rect, Shape, Text } from 'react-konva';
+import rough from 'roughjs';
+import type { Drawable } from 'roughjs/bin/core';
+import { Line, Shape, Text } from 'react-konva';
 import type { CanvasContent } from '../../../types/drawing';
 
 interface CanvasContentShapeProps {
@@ -13,6 +15,54 @@ interface CanvasContentShapeProps {
   onDragStart?: (event: KonvaEventObject<DragEvent>) => void;
   onDragMove?: (event: KonvaEventObject<DragEvent>) => void;
   onDragEnd?: (event: KonvaEventObject<DragEvent>) => void;
+}
+
+const roughGenerator = rough.generator();
+
+function seedFromId(id: string) {
+  let seed = 0;
+  for (const character of id) {
+    seed = (seed * 31 + character.charCodeAt(0)) >>> 0;
+  }
+  return Math.max(1, seed);
+}
+
+function drawRoughShape(
+  context: { _context: CanvasRenderingContext2D },
+  drawable: Drawable,
+) {
+  const canvasContext = context._context;
+
+  drawable.sets.forEach((drawing) => {
+    if (drawing.type !== 'path') return;
+
+    canvasContext.save();
+    canvasContext.strokeStyle = drawable.options.stroke;
+    canvasContext.lineWidth = drawable.options.strokeWidth;
+    canvasContext.lineCap = 'round';
+    canvasContext.lineJoin = 'round';
+    canvasContext.beginPath();
+
+    drawing.ops.forEach(({ op, data }) => {
+      if (op === 'move') {
+        canvasContext.moveTo(data[0], data[1]);
+      } else if (op === 'lineTo') {
+        canvasContext.lineTo(data[0], data[1]);
+      } else {
+        canvasContext.bezierCurveTo(
+          data[0],
+          data[1],
+          data[2],
+          data[3],
+          data[4],
+          data[5],
+        );
+      }
+    });
+
+    canvasContext.stroke();
+    canvasContext.restore();
+  });
 }
 
 export function CanvasContentShape({
@@ -55,34 +105,83 @@ export function CanvasContentShape({
   }
 
   if (content.type === 'rectangle') {
+    const drawable = roughGenerator.rectangle(
+      1,
+      1,
+      Math.max(0, content.width - 2),
+      Math.max(0, content.height - 2),
+      {
+        seed: seedFromId(content.id),
+        stroke: content.color,
+        strokeWidth: content.strokeWidth,
+        roughness: 1.2,
+        bowing: 1,
+      },
+    );
+
     return (
-      <Rect
+      <Shape
         {...interactionProps}
         x={content.x}
         y={content.y}
         width={content.width}
         height={content.height}
-        stroke={content.color}
-        strokeWidth={content.strokeWidth}
         opacity={content.opacity}
         fill="rgba(255,255,255,0.001)"
-        hitStrokeWidth={Math.max(18, content.strokeWidth + 8)}
+        sceneFunc={(context) => drawRoughShape(context, drawable)}
+        hitFunc={(context, shape) => {
+          context.beginPath();
+          context.rect(0, 0, content.width, content.height);
+          context.closePath();
+          context.fillStrokeShape(shape);
+        }}
       />
     );
   }
 
   if (content.type === 'circle') {
+    const width = content.radiusX * 2;
+    const height = content.radiusY * 2;
+    const drawable = roughGenerator.ellipse(
+      content.radiusX,
+      content.radiusY,
+      Math.max(0, width - 2),
+      Math.max(0, height - 2),
+      {
+        seed: seedFromId(content.id),
+        stroke: content.color,
+        strokeWidth: content.strokeWidth,
+        roughness: 1.2,
+        bowing: 1,
+      },
+    );
+
     return (
-      <Circle
+      <Shape
         {...interactionProps}
         x={content.x}
         y={content.y}
-        radius={content.radius}
-        stroke={content.color}
-        strokeWidth={content.strokeWidth}
+        width={width}
+        height={height}
+        offsetX={content.radiusX}
+        offsetY={content.radiusY}
         opacity={content.opacity}
         fill="rgba(255,255,255,0.001)"
-        hitStrokeWidth={Math.max(18, content.strokeWidth + 8)}
+        sceneFunc={(context) => drawRoughShape(context, drawable)}
+        hitFunc={(context, shape) => {
+          context.beginPath();
+          context.ellipse(
+            content.radiusX,
+            content.radiusY,
+            content.radiusX,
+            content.radiusY,
+            0,
+            0,
+            Math.PI * 2,
+          );
+          context.closePath();
+          context.fillStrokeShape(shape);
+        }}
       />
     );
   }
@@ -123,7 +222,7 @@ export function CanvasContentShape({
           }
           if (content.label) {
             context.fillStyle = '#374151';
-            context.font = '500 16px Inter, Arial, sans-serif';
+            context.font = '500 16px Assistant, Arial, sans-serif';
             context.textBaseline = 'middle';
             context.fillText(
               content.label,
@@ -169,7 +268,7 @@ export function CanvasContentShape({
           context.fill();
           context.stroke();
           context.fillStyle = '#98a1af';
-          context.font = '400 15px Inter, Arial, sans-serif';
+          context.font = '400 15px Assistant, Arial, sans-serif';
           context.textBaseline = 'middle';
           context.fillText(
             content.placeholder,
@@ -198,7 +297,7 @@ export function CanvasContentShape({
       fill={content.color}
       opacity={content.opacity}
       fontSize={content.fontSize}
-      fontFamily="Inter, Arial, sans-serif"
+      fontFamily="Excalifont, sans-serif"
       hitStrokeWidth={8}
     />
   );

@@ -29,8 +29,18 @@ function expandSelection(ids: string[], groups: ContentGroup[]) {
   return [...expandedIds];
 }
 
+function getNextWindowNumber(windows: PrototypeWindow[]) {
+  const highestNumber = windows.reduce((highest, window) => {
+    const match = /^Fenêtre (\d+)$/.exec(window.name);
+    return match ? Math.max(highest, Number(match[1])) : highest;
+  }, 0);
+
+  return Math.max(highestNumber, windows.length) + 1;
+}
+
 // Source de vérité partagée par l'éditeur, les miniatures et la simulation.
 interface EditorState {
+  projectTitle: string;
   activeTool: Tool;
   drawingColor: string;
   drawingWidth: number;
@@ -41,10 +51,13 @@ interface EditorState {
   interactions: PrototypeInteraction[];
   selectedContentIds: string[];
   history: EditorSnapshot[];
+  setProjectTitle: (title: string) => void;
   setActiveTool: (tool: Tool) => void;
   setDrawingColor: (color: string) => void;
   setDrawingWidth: (width: number) => void;
   createWindow: () => void;
+  deleteWindow: (id: string) => void;
+  renameWindow: (id: string, name: string) => void;
   selectWindow: (id: string) => void;
   selectContent: (id: string, additive?: boolean) => void;
   setSelection: (ids: string[], additive?: boolean) => void;
@@ -98,6 +111,7 @@ function remember(
 }
 
 export const useEditorStore = create<EditorState>((set) => ({
+  projectTitle: 'Sans titre',
   activeTool: 'pencil',
   drawingColor: '#1f2937',
   drawingWidth: 4,
@@ -108,6 +122,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   interactions: [],
   selectedContentIds: [],
   history: [],
+  setProjectTitle: (projectTitle) => set({ projectTitle }),
   setActiveTool: (activeTool) =>
     set((state) => ({
       activeTool,
@@ -119,14 +134,77 @@ export const useEditorStore = create<EditorState>((set) => ({
   createWindow: () =>
     set((state) => {
       const id = crypto.randomUUID();
+      const windowNumber = getNextWindowNumber(state.windows);
 
       return remember(state, {
         windows: [
           ...state.windows,
-          { id, name: `Fenêtre ${state.windows.length + 1}` },
+          { id, name: `Fenêtre ${windowNumber}` },
         ],
         activeWindowId: id,
         selectedContentIds: [],
+      });
+    }),
+  deleteWindow: (id) =>
+    set((state) => {
+      if (state.windows.length <= 1) return state;
+      const deletedIndex = state.windows.findIndex((window) => window.id === id);
+      if (deletedIndex < 0) return state;
+
+      const windows = state.windows
+        .filter((window) => window.id !== id)
+        .map((window, index) => ({
+          ...window,
+          name: /^Fenêtre \d+$/.test(window.name)
+            ? `Fenêtre ${index + 1}`
+            : window.name,
+        }));
+      const fallbackWindow =
+        windows[Math.min(deletedIndex, windows.length - 1)];
+      const deletedContentIds = new Set(
+        state.contents
+          .filter((content) => content.windowId === id)
+          .map((content) => content.id),
+      );
+
+      return remember(state, {
+        windows,
+        activeWindowId:
+          state.activeWindowId === id
+            ? fallbackWindow.id
+            : state.activeWindowId,
+        contents: state.contents.filter((content) => content.windowId !== id),
+        groups: state.groups.filter((group) => group.windowId !== id),
+        interactions: state.interactions
+          .filter(
+            (interaction) =>
+              interaction.sourceWindowId !== id &&
+              interaction.targetWindowId !== id,
+          )
+          .map((interaction) => ({
+            ...interaction,
+            contentIds: interaction.contentIds.filter(
+              (contentId) => !deletedContentIds.has(contentId),
+            ),
+          }))
+          .filter((interaction) => interaction.contentIds.length > 0),
+        selectedContentIds: [],
+      });
+    }),
+  renameWindow: (id, name) =>
+    set((state) => {
+      const normalizedName = name.trim();
+      const window = state.windows.find((candidate) => candidate.id === id);
+      if (!window || !normalizedName || window.name === normalizedName) {
+        return state;
+      }
+
+      return remember(state, {
+        windows: state.windows.map((candidate) =>
+          candidate.id === id
+            ? { ...candidate, name: normalizedName }
+            : candidate,
+        ),
       });
     }),
   selectWindow: (activeWindowId) =>

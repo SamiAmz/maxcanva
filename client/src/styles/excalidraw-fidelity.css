@@ -1,0 +1,267 @@
+/* Ajustements de fidélité visuelle à Excalidraw */
+.editor-shell {
+  --ui-primary: #6965db;
+  --ui-primary-light: #e0dfff;
+  --ui-surface: #ffffff;
+  --ui-soft: #f1f0f5;
+  --ui-border: #e7e6eb;
+  --ui-text: #1b1b1f;
+  --ui-muted: #76747f;
+  background: #fff;
+}
+
+.editor-header {
+  top: 16px;
+  right: 16px;
+  left: 16px;
+  height: 44px;
+  grid-template-columns: 44px auto 1fr;
+}
+
+.brand {
+  width: 44px;
+  min-height: 44px;
+  padding: 4px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--ui-soft);
+  box-shadow: none;
+}
+
+.brand-name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.menu-button {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 8px;
+  color: var(--ui-text);
+}
+
+.menu-button svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.8;
+}
+
+.document-title {
+  display: none;
+}
+
+.header-actions {
+  grid-column: 3;
+  min-height: 44px;
+  padding: 4px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.undo-button {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  width: 44px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--ui-soft);
+}
+
+.start-simulation-button {
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.start-simulation-button svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.tool-rail {
+  top: 16px;
+  height: 44px;
+  gap: 4px;
+  padding: 4px;
+  border-color: var(--ui-border);
+  border-radius: 8px;
+  background: var(--ui-surface);
+  box-shadow:
+    0 0 1px rgba(0, 0, 0, 0.17),
+    0 0 3px rgba(0, 0, 0, 0.08),
+    0 7px 14px rgba(0, 0, 0, 0.05);
+}
+
+.tool-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.tool-button:hover {
+  background: var(--ui-soft);
+}
+
+.tool-button.is-active {
+  color: #4f4bc4;
+  background: var(--ui-primary-light);
+}
+
+.tool-icon,
+.tool-icon svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.tool-shortcut {
+  position: absolute;
+  right: 3px;
+  bottom: 1px;
+  color: #8b8994;
+  font-size: 8px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.tool-button.is-active .tool-shortcut {
+  color: #5b57c8;
+}
+
+.tool-rail-divider {
+  height: 24px;
+  background: var(--ui-border);
+}
+
+.windows-panel {
+  top: 84px;
+  left: 16px;
+  width: 188px;
+  height: min(556px, calc(100dvh - 144px));
+  padding: 12px;
+  border-color: var(--ui-border);
+  border-radius: 8px;
+  box-shadow:
+    0 0 1px rgba(0, 0, 0, 0.16),
+    0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.windows-panel-header h2,
+.window-card-footer strong {
+  color: var(--ui-text);
+}
+
+.add-window-button {
+  color: #4f4bc4;
+  background: var(--ui-primary-light);
+}
+
+.window-card {
+  border-radius: 8px;
+}
+
+.window-card.is-active {
+  border-color: #b8b5f2;
+  background: #f0efff;
+}
+
+.canvas-workspace {
+  top: 0;
+  left: 0;
+  padding: 84px 24px 64px 220px;
+  background: #fff;
+}
+
+.drawing-page {
+  border-color: #ecebf0;
+  border-radius: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.drawing-controls,
+.selection-controls {
+  bottom: 16px;
+  left: 50%;
+  border-color: var(--ui-border);
+  border-radius: 8px;
+  box-shadow:
+    0 0 1px rgba(0, 0, 0, 0.17),
+    0 0 3px rgba(0, 0, 0, 0.08),
+    0 7px 14px rgba(0, 0, 0, 0.05);
+}
+
+.drawing-controls {
+  min-height: 44px;
+  padding: 6px 10px;
+}
+
+.selection-controls {
+  min-height: 44px;
+  padding: 6px 8px;
+}
+
+.color-swatch,
+.custom-color {
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+}
+
+.width-button {
+  width: 36px;
+  height: 32px;
+}
+
+@media (max-width: 900px) {
+  .tool-rail {
+    top: 68px;
+  }
+
+  .windows-panel {
+    top: 124px;
+  }
+
+  .canvas-workspace {
+    top: 0;
+    left: 0;
+    padding: 124px 14px 70px 180px;
+  }
+}
+
+@media (max-width: 640px) {
+  .tool-rail {
+    top: 68px;
+  }
+
+  .windows-panel {
+    top: auto;
+  }
+
+  .canvas-workspace {
+    top: 0;
+    bottom: 0;
+    padding: 124px 10px 192px;
+  }
+
+  .undo-button {
+    display: none;
+  }
+}
+

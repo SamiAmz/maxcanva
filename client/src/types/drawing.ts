@@ -41,7 +41,8 @@ export interface CircleContent extends BaseContent {
   type: 'circle';
   x: number;
   y: number;
-  radius: number;
+  radiusX: number;
+  radiusY: number;
   strokeWidth: number;
 }
 

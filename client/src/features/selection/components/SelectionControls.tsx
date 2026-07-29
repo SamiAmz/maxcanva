@@ -67,7 +67,10 @@ export function SelectionControls() {
   }, [clearSelection, deleteSelected, dialogOpen, selectedCount]);
 
   return (
-    <section className="selection-controls" aria-label="Options de sélection">
+    <section
+      className={`selection-controls ${selectedCount === 0 ? 'is-empty' : ''}`}
+      aria-label="Options de sélection"
+    >
       <span className="selection-summary-icon" aria-hidden="true">↖</span>
       <span className="selection-summary">
         {selectedCount > 0
@@ -78,49 +81,55 @@ export function SelectionControls() {
             : `${selectedCount} ${selectedCount > 1 ? 'éléments sélectionnés' : 'élément sélectionné'}`
           : 'Cliquez ou encadrez des contenus'}
       </span>
-      <div className="control-divider" />
-      <div className="grouping-actions" aria-label="Actions de groupe">
-        <button
-          className="grouping-selection-button"
-          type="button"
-          disabled={!canGroup}
-          aria-label="Grouper la sélection"
-          title="Réunir la sélection en un groupe"
-          onClick={groupSelected}
-        >
-          <span aria-hidden="true">⊞</span>
-          <span className="button-label">Grouper</span>
-        </button>
-        <button
-          className="grouping-selection-button"
-          type="button"
-          disabled={!canUngroup}
-          aria-label="Dégrouper la sélection"
-          title="Séparer les groupes sélectionnés"
-          onClick={ungroupSelected}
-        >
-          <span aria-hidden="true">⊟</span>
-          <span className="button-label">Dégrouper</span>
-        </button>
-      </div>
-      <button
-        className="link-selection-button"
-        type="button"
-        disabled={selectedCount === 0}
-        onClick={() => setDialogOpen(true)}
-      >
-        <span aria-hidden="true">↗</span>
-        {hasInteraction ? 'Modifier le lien' : 'Créer un lien'}
-      </button>
-      <button
-        className="delete-selection-button"
-        type="button"
-        disabled={selectedCount === 0}
-        onClick={deleteSelected}
-      >
-        <span aria-hidden="true">⌫</span>
-        Effacer
-      </button>
+      {selectedCount > 0 && (
+        <>
+          <div className="control-divider" />
+          {(canGroup || canUngroup) && (
+            <div className="grouping-actions" aria-label="Actions de groupe">
+              {canGroup && (
+                <button
+                  className="grouping-selection-button"
+                  type="button"
+                  aria-label="Grouper la sélection"
+                  title="Réunir la sélection en un groupe"
+                  onClick={groupSelected}
+                >
+                  <span aria-hidden="true">⊞</span>
+                  <span className="button-label">Grouper</span>
+                </button>
+              )}
+              {canUngroup && (
+                <button
+                  className="grouping-selection-button"
+                  type="button"
+                  aria-label="Dégrouper la sélection"
+                  title="Séparer les groupes sélectionnés"
+                  onClick={ungroupSelected}
+                >
+                  <span aria-hidden="true">⊟</span>
+                  <span className="button-label">Dégrouper</span>
+                </button>
+              )}
+            </div>
+          )}
+          <button
+            className="link-selection-button"
+            type="button"
+            onClick={() => setDialogOpen(true)}
+          >
+            <span aria-hidden="true">↗</span>
+            {hasInteraction ? 'Modifier le lien' : 'Créer un lien'}
+          </button>
+          <button
+            className="delete-selection-button"
+            type="button"
+            onClick={deleteSelected}
+          >
+            <span aria-hidden="true">⌫</span>
+            Effacer
+          </button>
+        </>
+      )}
       <InteractionDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
     </section>
   );

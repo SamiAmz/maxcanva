@@ -33,10 +33,10 @@ export function getContentBounds(content: CanvasContent): ContentBounds {
   if (content.type === 'circle') {
     const padding = content.strokeWidth / 2;
     return {
-      x: content.x - content.radius - padding,
-      y: content.y - content.radius - padding,
-      width: content.radius * 2 + padding * 2,
-      height: content.radius * 2 + padding * 2,
+      x: content.x - content.radiusX - padding,
+      y: content.y - content.radiusY - padding,
+      width: content.radiusX * 2 + padding * 2,
+      height: content.radiusY * 2 + padding * 2,
     };
   }
 
@@ -129,12 +129,12 @@ export function transformContent(
   }
 
   if (content.type === 'circle') {
-    const uniformScale = Math.min(scaleX, scaleY);
     return {
       ...content,
       x: transform.x,
       y: transform.y,
-      radius: Math.max(4, content.radius * uniformScale),
+      radiusX: Math.max(4, content.radiusX * scaleX),
+      radiusY: Math.max(4, content.radiusY * scaleY),
     };
   }
 

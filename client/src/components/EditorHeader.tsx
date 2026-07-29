@@ -21,6 +21,8 @@ export function EditorHeader({ onStartSimulation }: EditorHeaderProps) {
     state.windows.find((window) => window.id === state.activeWindowId),
   );
   const activeTool = useEditorStore((state) => state.activeTool);
+  const projectTitle = useEditorStore((state) => state.projectTitle);
+  const setProjectTitle = useEditorStore((state) => state.setProjectTitle);
   const canUndo = useEditorStore((state) => state.history.length > 0);
   const undo = useEditorStore((state) => state.undo);
 
@@ -50,13 +52,17 @@ export function EditorHeader({ onStartSimulation }: EditorHeaderProps) {
 
   return (
     <header className="editor-header">
-      <div className="brand">
-        <span className="brand-mark" aria-hidden="true">M</span>
-        <span>MaxCanva</span>
-      </div>
-
       <div className="document-title">
-        <span>Sans titre</span>
+        <input
+          className="project-title-input"
+          value={projectTitle}
+          aria-label="Titre du projet"
+          spellCheck={false}
+          onChange={(event) => setProjectTitle(event.target.value)}
+          onBlur={() => {
+            if (!projectTitle.trim()) setProjectTitle('Sans titre');
+          }}
+        />
         <span className="title-separator">/</span>
         <strong>{activeWindow?.name ?? 'Fenêtre'}</strong>
       </div>
@@ -81,8 +87,10 @@ export function EditorHeader({ onStartSimulation }: EditorHeaderProps) {
           type="button"
           onClick={onStartSimulation}
         >
-          <span aria-hidden="true">▶</span>
-          Simuler
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m9 7 8 5-8 5V7Z" />
+          </svg>
+          <span className="simulation-button-label">Simuler</span>
         </button>
       </div>
     </header>

@@ -1,0 +1,179 @@
+/* Adaptation tablette et mobile */
+@media (max-width: 900px) {
+  .editor-shell {
+    grid-template-columns: 60px minmax(0, 1fr);
+    grid-template-rows: 56px 118px minmax(0, 1fr);
+  }
+
+  .editor-header {
+    grid-template-columns: 1fr auto;
+    padding: 0 14px;
+  }
+
+  .brand span:last-child,
+  .tool-status {
+    display: none;
+  }
+
+  .start-simulation-button {
+    width: 38px;
+    padding: 0;
+    justify-content: center;
+    font-size: 0;
+  }
+
+  .start-simulation-button span {
+    font-size: 10px;
+  }
+
+  .document-title {
+    justify-self: end;
+  }
+
+  .tool-button {
+    width: 50px;
+  }
+
+  .tool-rail {
+    grid-row: 2 / 4;
+  }
+
+  .windows-panel {
+    grid-column: 2;
+    grid-row: 2;
+    flex-direction: row;
+    padding: 10px 12px;
+    border-right: 0;
+    border-bottom: 1px solid #e1e5eb;
+  }
+
+  .windows-panel-header {
+    width: 92px;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 10px 0 0;
+  }
+
+  .window-list {
+    flex: 1;
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 6px 4px;
+  }
+
+  .window-card {
+    width: 132px;
+    flex-direction: row;
+    align-items: center;
+    gap: 7px;
+    padding: 6px;
+  }
+
+  .window-number {
+    top: 10px;
+    left: 10px;
+  }
+
+  .window-preview {
+    width: 82px;
+    flex: 0 0 auto;
+  }
+
+  .window-card-footer {
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .canvas-workspace {
+    grid-column: 2;
+    grid-row: 3;
+  }
+
+  .drawing-controls {
+    right: 12px;
+    bottom: 12px;
+    left: 72px;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px;
+    transform: none;
+  }
+
+  .selection-controls {
+    right: 12px;
+    bottom: 12px;
+    left: 72px;
+    justify-content: center;
+    transform: none;
+  }
+
+  .selection-summary {
+    min-width: 0;
+  }
+
+  .selection-summary-icon,
+  .selection-controls > .control-divider {
+    display: none;
+  }
+
+  .link-selection-button,
+  .delete-selection-button {
+    padding: 0 9px;
+  }
+
+  .grouping-selection-button {
+    width: 30px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .grouping-selection-button .button-label {
+    display: none;
+  }
+
+  .interaction-dialog {
+    padding: 20px;
+    border-radius: 17px;
+  }
+
+  .interaction-type-options {
+    grid-template-columns: 1fr;
+  }
+
+  .simulation-overlay {
+    grid-template-rows: 60px minmax(0, 1fr);
+  }
+
+  .simulation-header {
+    padding: 0 12px;
+  }
+
+  .simulation-title small,
+  .close-simulation-button {
+    display: none;
+  }
+
+  .control-label,
+  .control-divider {
+    display: none;
+  }
+
+  .color-options,
+  .width-options {
+    gap: 5px;
+  }
+
+  .color-swatch,
+  .custom-color {
+    width: 22px;
+    height: 22px;
+  }
+}
