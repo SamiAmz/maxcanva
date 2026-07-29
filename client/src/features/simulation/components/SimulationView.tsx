@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Layer, Rect, Stage } from 'react-konva';
-import { useEditorStore } from '../../../store/useEditorStore';
 import type {
   CanvasContent,
   PrototypeInteraction,
-} from '../../../types/drawing';
-import { CanvasContentShape } from '../../canvas/components/CanvasContentShape';
-import { getCombinedBounds } from '../../canvas/utils/contentGeometry';
+} from '@maxcanva/shared';
+import { getCombinedBounds } from '@/domain/project/contentGeometry';
+import { CanvasContentShape } from '@/features/canvas/components/CanvasContentShape';
+import { useEditorStore } from '@/features/editor/store/useEditorStore';
 
 const PAGE_WIDTH = 960;
 const PAGE_HEIGHT = 640;

@@ -1,4 +1,4 @@
-import type { CanvasContent } from '../../../types/drawing';
+import type { CanvasContent } from '@maxcanva/shared';
 
 export interface ContentBounds {
   x: number;

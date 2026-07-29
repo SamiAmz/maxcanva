@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useEditorStore } from '../../../store/useEditorStore';
-import type { CanvasContent } from '../../../types/drawing';
-import { InteractionDialog } from '../../interactions/components/InteractionDialog';
-import { ShapeStyleControls } from '../../canvas/components/ShapeStyleControls';
+import type { CanvasContent } from '@maxcanva/shared';
+import { ShapeStyleControls } from '@/features/canvas/components/ShapeStyleControls';
+import { useEditorStore } from '@/features/editor/store/useEditorStore';
+import { InteractionDialog } from '@/features/interactions/components/InteractionDialog';
 
 type StyledShape = Extract<
   CanvasContent,

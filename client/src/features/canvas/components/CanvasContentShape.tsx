@@ -3,7 +3,7 @@ import type { Shape as KonvaShape } from 'konva/lib/Shape';
 import rough from 'roughjs';
 import type { Drawable } from 'roughjs/bin/core';
 import { Line, Shape, Text } from 'react-konva';
-import type { CanvasContent } from '../../../types/drawing';
+import type { CanvasContent } from '@maxcanva/shared';
 
 interface CanvasContentShapeProps {
   content: CanvasContent;

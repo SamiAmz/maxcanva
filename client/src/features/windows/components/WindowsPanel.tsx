@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useEditorStore } from '../../../store/useEditorStore';
+import { useEditorStore } from '@/features/editor/store/useEditorStore';
 import { WindowThumbnail } from './WindowThumbnail';
 
 interface WindowNameInputProps {

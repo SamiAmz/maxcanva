@@ -1,6 +1,8 @@
 # MaxCanva
 
-MaxCanva est un éditeur de prototypes dessinés à main levée. Le client est construit avec React, TypeScript, Konva et Zustand.
+MaxCanva est un éditeur de prototypes dessinés à main levée. Le dépôt est un
+monorepo TypeScript composé d'un client React, d'un noyau partagé et d'un
+serveur préparé pour les fonctionnalités distantes.
 
 ## Lancer le projet
 
@@ -9,27 +11,38 @@ npm install
 npm run dev
 ```
 
-La commande `npm run build` vérifie TypeScript et produit la version de production.
+La commande `npm run build` vérifie les trois workspaces puis produit la version
+de production du client.
 
-## Organisation du client
+## Organisation du dépôt
 
 ```text
-client/src/
-├── components/             En-tête et barre d'outils globale
-├── features/
-│   ├── canvas/             Page Konva, outils de dessin et rendu des contenus
-│   ├── interactions/       Boutons, hyperliens et dialogue de configuration
-│   ├── selection/          Actions sur les contenus sélectionnés
-│   ├── simulation/         Exécution et navigation dans le prototype
-│   └── windows/            Liste et miniatures des fenêtres
-├── store/                  État global Zustand et actions métier
-├── types/                  Modèle de données partagé dans le client
-├── App.tsx                 Assemblage de l'interface
-└── styles.css              Styles globaux et responsive
+maxcanva/
+├── client/
+│   └── src/
+│       ├── app/                 Composition de l'application
+│       ├── application/ports/   Contrats des services externes
+│       ├── domain/project/      Règles pures du prototype
+│       ├── features/            Interface organisée par fonctionnalité
+│       ├── infrastructure/      Futurs adaptateurs client
+│       └── styles/              Styles de l'éditeur
+├── server/
+│   └── src/modules/
+│       ├── auth/                Comptes et sessions
+│       ├── projects/            Sauvegarde et autorisation
+│       └── assistant/           Intégration LLM côté serveur
+└── shared/
+    └── src/contracts/           Données échangées entre client et serveur
 ```
+
+Les alias `@/` et `@maxcanva/shared` évitent que les imports dépendent de la
+profondeur des dossiers. La direction des dépendances et les points d'extension
+sont détaillés dans [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ## Modèle de données
 
+- `ProjectDocument` est le format versionné destiné à la sauvegarde et aux
+  échanges avec le serveur.
 - `PrototypeWindow` représente une page du prototype.
 - `CanvasContent` représente un trait, une forme, un texte ou un widget.
 - `ContentGroup` associe plusieurs contenus d'une même fenêtre.
@@ -107,14 +120,26 @@ Les contenus ne sont pas stockés directement dans une fenêtre. Chaque contenu 
 
 ## Rôle du store Zustand
 
-`useEditorStore.ts` est la source de vérité de l'application. Il contient les fenêtres, les contenus, les interactions, la sélection et le style des outils. Les composants lisent seulement les valeurs dont ils ont besoin et appellent les actions du store pour modifier les données.
+`features/editor/store/useEditorStore.ts` est la source de vérité de la session
+d'édition. Il contient à la fois les données du document et l'état temporaire
+de l'interface. `domain/project/projectDocument.ts` extrait uniquement la partie
+persistante; l'outil actif, la sélection et l'historique ne sont donc pas inclus
+dans un fichier ou une sauvegarde.
 
 Lorsqu'un contenu est supprimé, le store nettoie aussi les interactions qui le référencent. Cette règle évite les références invalides.
 
 ## Styles
 
-`styles.css` contient les styles globaux. Les classes sont regroupées selon les grandes zones de l'interface : en-tête, outils, fenêtres, canvas, contrôles contextuels, dialogues, simulation et adaptation mobile.
+`styles.css` est le point d'entrée des feuilles spécialisées de `styles/`.
+Les classes sont regroupées selon les grandes zones de l'interface : en-tête,
+outils, fenêtres, canvas, contrôles contextuels, dialogues, simulation et
+adaptation mobile.
 
 ## Ajouter une fonctionnalité
 
-Une fonctionnalité autonome doit être ajoutée sous `client/src/features/<nom>/`. Placez son état global dans le store seulement s'il doit être partagé entre plusieurs composants ou conservé lors d'un changement de fenêtre. Les types persistants doivent être ajoutés dans `types/drawing.ts`.
+Une fonctionnalité visuelle autonome doit être ajoutée sous
+`client/src/features/<nom>/`. Une règle qui ne dépend pas de React va dans
+`client/src/domain/`. Un service externe est d'abord décrit par un port dans
+`client/src/application/ports/`, puis implémenté dans `client/src/infrastructure/`.
+Tout contrat persistant ou échangé avec le serveur appartient à
+`shared/src/contracts/`.

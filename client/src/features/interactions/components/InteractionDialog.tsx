@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useEditorStore } from '../../../store/useEditorStore';
-import type { InteractionType } from '../../../types/drawing';
+import type { InteractionType } from '@maxcanva/shared';
+import { useEditorStore } from '@/features/editor/store/useEditorStore';
 
 interface InteractionDialogProps {
   open: boolean;

@@ -2,8 +2,8 @@ import { Label, Rect, Tag, Text } from 'react-konva';
 import type {
   CanvasContent,
   PrototypeInteraction,
-} from '../../../types/drawing';
-import { getCombinedBounds } from '../../canvas/utils/contentGeometry';
+} from '@maxcanva/shared';
+import { getCombinedBounds } from '@/domain/project/contentGeometry';
 
 interface InteractionOverlayProps {
   interaction: PrototypeInteraction;

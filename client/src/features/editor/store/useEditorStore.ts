@@ -1,159 +1,20 @@
 import { create } from 'zustand';
-import type {
-  CanvasContent,
-  ContentGroup,
-  InteractionType,
-  PrototypeInteraction,
-  PrototypeWindow,
-  Tool,
-} from '../types/drawing';
+import type { PrototypeWindow } from '@maxcanva/shared';
 import {
   moveContent,
   transformContent,
-  type ContentTransform,
-} from '../features/canvas/utils/contentGeometry';
+} from '@/domain/project/contentGeometry';
+import {
+  expandSelection,
+  getNextWindowNumber,
+  reorderContents,
+} from '@/domain/project/projectOperations';
+import type { EditorSnapshot, EditorState } from './editorState';
 
 const INITIAL_WINDOW: PrototypeWindow = {
   id: 'window-1',
   name: 'Fenêtre 1',
 };
-
-function expandSelection(ids: string[], groups: ContentGroup[]) {
-  const expandedIds = new Set(ids);
-
-  groups.forEach((group) => {
-    if (group.contentIds.some((id) => expandedIds.has(id))) {
-      group.contentIds.forEach((id) => expandedIds.add(id));
-    }
-  });
-  return [...expandedIds];
-}
-
-function getNextWindowNumber(windows: PrototypeWindow[]) {
-  const highestNumber = windows.reduce((highest, window) => {
-    const match = /^Fenêtre (\d+)$/.exec(window.name);
-    return match ? Math.max(highest, Number(match[1])) : highest;
-  }, 0);
-
-  return Math.max(highestNumber, windows.length) + 1;
-}
-
-type LayerAction =
-  | 'send-to-back'
-  | 'send-backward'
-  | 'bring-forward'
-  | 'bring-to-front';
-
-function reorderContents(
-  contents: CanvasContent[],
-  activeWindowId: string,
-  selectedContentIds: string[],
-  action: LayerAction,
-) {
-  const selectedIds = new Set(selectedContentIds);
-  const windowContents = contents.filter(
-    (content) => content.windowId === activeWindowId,
-  );
-  const isSelected = (content: CanvasContent) => selectedIds.has(content.id);
-  let reordered = [...windowContents];
-
-  if (action === 'send-to-back') {
-    reordered = [
-      ...windowContents.filter(isSelected),
-      ...windowContents.filter((content) => !isSelected(content)),
-    ];
-  } else if (action === 'bring-to-front') {
-    reordered = [
-      ...windowContents.filter((content) => !isSelected(content)),
-      ...windowContents.filter(isSelected),
-    ];
-  } else if (action === 'send-backward') {
-    for (let index = 1; index < reordered.length; index += 1) {
-      if (isSelected(reordered[index]) && !isSelected(reordered[index - 1])) {
-        [reordered[index - 1], reordered[index]] = [
-          reordered[index],
-          reordered[index - 1],
-        ];
-      }
-    }
-  } else {
-    for (let index = reordered.length - 2; index >= 0; index -= 1) {
-      if (isSelected(reordered[index]) && !isSelected(reordered[index + 1])) {
-        [reordered[index], reordered[index + 1]] = [
-          reordered[index + 1],
-          reordered[index],
-        ];
-      }
-    }
-  }
-
-  let windowIndex = 0;
-  return contents.map((content) =>
-    content.windowId === activeWindowId
-      ? reordered[windowIndex++]
-      : content,
-  );
-}
-
-// Source de vérité partagée par l'éditeur, les miniatures et la simulation.
-interface EditorState {
-  projectTitle: string;
-  activeTool: Tool;
-  drawingColor: string;
-  drawingFillColor: string;
-  drawingWidth: number;
-  windows: PrototypeWindow[];
-  activeWindowId: string;
-  contents: CanvasContent[];
-  groups: ContentGroup[];
-  interactions: PrototypeInteraction[];
-  selectedContentIds: string[];
-  history: EditorSnapshot[];
-  setProjectTitle: (title: string) => void;
-  setActiveTool: (tool: Tool) => void;
-  setDrawingColor: (color: string) => void;
-  setDrawingFillColor: (color: string) => void;
-  setDrawingWidth: (width: number) => void;
-  createWindow: () => void;
-  deleteWindow: (id: string) => void;
-  renameWindow: (id: string, name: string) => void;
-  selectWindow: (id: string) => void;
-  selectContent: (id: string, additive?: boolean) => void;
-  setSelection: (ids: string[], additive?: boolean) => void;
-  clearSelection: () => void;
-  deleteSelected: () => void;
-  updateSelectedShapeStyle: (style: {
-    color?: string;
-    fillColor?: string;
-    strokeWidth?: number;
-  }) => void;
-  reorderSelected: (action: LayerAction) => void;
-  groupSelected: () => void;
-  ungroupSelected: () => void;
-  moveContents: (ids: string[], x: number, y: number) => void;
-  transformContents: (transforms: ContentTransform[]) => void;
-  saveInteraction: (interaction: {
-    sourceWindowId: string;
-    targetWindowId?: string;
-    url?: string;
-    contentIds: string[];
-    type: InteractionType;
-  }) => void;
-  removeInteractionsForContents: (contentIds: string[]) => void;
-  addContent: (content: CanvasContent) => void;
-  updatePencilPoints: (id: string, points: number[]) => void;
-  updateCheckboxLabel: (id: string, label: string) => void;
-  undo: () => void;
-}
-
-type EditorSnapshot = Pick<
-  EditorState,
-  | 'windows'
-  | 'activeWindowId'
-  | 'contents'
-  | 'groups'
-  | 'interactions'
->;
 
 const HISTORY_LIMIT = 50;
 

@@ -1,4 +1,4 @@
-import type { ContentBounds } from './contentGeometry';
+import type { ContentBounds } from '@/domain/project/contentGeometry';
 
 export interface AlignmentGuide {
   orientation: 'vertical' | 'horizontal';

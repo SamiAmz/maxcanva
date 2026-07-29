@@ -2,5 +2,19 @@
   "name": "@maxcanva/shared",
   "private": true,
   "version": "0.0.0",
-  "type": "module"
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
 }

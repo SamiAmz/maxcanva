@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import type { KonvaEventObject } from 'konva/lib/Node';
-import { useEditorStore } from '../../../store/useEditorStore';
+import { useEditorStore } from '@/features/editor/store/useEditorStore';
 
 export function usePencilDrawing(scale: number) {
   // Ces références décrivent le geste en cours sans provoquer un rendu React.

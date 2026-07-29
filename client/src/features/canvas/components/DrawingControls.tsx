@@ -1,4 +1,4 @@
-import { useEditorStore } from '../../../store/useEditorStore';
+import { useEditorStore } from '@/features/editor/store/useEditorStore';
 import { ShapeStyleControls } from './ShapeStyleControls';
 
 export function DrawingControls() {

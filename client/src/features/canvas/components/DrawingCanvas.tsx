@@ -3,14 +3,14 @@ import type { KonvaEventObject } from 'konva/lib/Node';
 import type { Shape as KonvaShape } from 'konva/lib/Shape';
 import type { Transformer as KonvaTransformer } from 'konva/lib/shapes/Transformer';
 import { Circle, Layer, Line, Rect, Stage, Transformer } from 'react-konva';
-import { useEditorStore } from '../../../store/useEditorStore';
+import { useEditorStore } from '@/features/editor/store/useEditorStore';
 import { usePencilDrawing } from '../hooks/usePencilDrawing';
-import { InteractionOverlay } from '../../interactions/components/InteractionOverlay';
+import { InteractionOverlay } from '@/features/interactions/components/InteractionOverlay';
 import { CanvasContentShape } from './CanvasContentShape';
 import {
   getCombinedBounds,
   getContentBounds,
-} from '../utils/contentGeometry';
+} from '@/domain/project/contentGeometry';
 import {
   getAlignmentSnap,
   type AlignmentGuide,

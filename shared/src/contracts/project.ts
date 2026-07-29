@@ -1,3 +1,5 @@
+export const PROJECT_DOCUMENT_VERSION = 1 as const;
+
 export type DrawingTool = 'pencil' | 'rectangle' | 'circle' | 'text';
 export type WidgetTool = 'checkbox' | 'text-input';
 export type Tool = DrawingTool | WidgetTool | 'select';
@@ -23,7 +25,6 @@ interface BaseContent {
 
 export interface PencilContent extends BaseContent {
   type: 'pencil';
-  // Konva représente un tracé par une liste alternée: [x1, y1, x2, y2, ...].
   points: number[];
   strokeWidth: number;
 }
@@ -88,10 +89,21 @@ export type InteractionType = 'button' | 'link';
 export interface PrototypeInteraction {
   id: string;
   sourceWindowId: string;
-  // Un bouton utilise targetWindowId; un hyperlien utilise url.
   targetWindowId?: string;
   url?: string;
-  // Plusieurs contenus peuvent former une seule zone interactive.
   contentIds: string[];
   type: InteractionType;
+}
+
+/**
+ * Format persistant et transportable d'un prototype.
+ * Toute évolution incompatible devra introduire une nouvelle version et une migration.
+ */
+export interface ProjectDocument {
+  schemaVersion: typeof PROJECT_DOCUMENT_VERSION;
+  title: string;
+  windows: PrototypeWindow[];
+  contents: CanvasContent[];
+  groups: ContentGroup[];
+  interactions: PrototypeInteraction[];
 }

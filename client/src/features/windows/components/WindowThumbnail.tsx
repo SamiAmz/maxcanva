@@ -1,6 +1,6 @@
 import { Layer, Rect, Stage } from 'react-konva';
-import type { CanvasContent } from '../../../types/drawing';
-import { CanvasContentShape } from '../../canvas/components/CanvasContentShape';
+import type { CanvasContent } from '@maxcanva/shared';
+import { CanvasContentShape } from '@/features/canvas/components/CanvasContentShape';
 
 const THUMBNAIL_WIDTH = 164;
 const THUMBNAIL_HEIGHT = 110;

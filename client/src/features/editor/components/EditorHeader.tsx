@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { useEditorStore } from '../store/useEditorStore';
-import type { Tool } from '../types/drawing';
+import type { Tool } from '@maxcanva/shared';
+import { useEditorStore } from '@/features/editor/store/useEditorStore';
 
 interface EditorHeaderProps {
   onStartSimulation: () => void;
