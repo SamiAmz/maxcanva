@@ -66,6 +66,14 @@ Les contenus ne sont pas stockés directement dans une fenêtre. Chaque contenu 
 3. Les repères disparaissent immédiatement au relâchement.
 4. Maintenir `Alt` pendant le déplacement désactive temporairement l'aimantation.
 
+### Annuler une action
+
+1. Le bouton `↶` de l'en-tête annule la dernière modification.
+2. Le raccourci `Ctrl + Z` ou `Cmd + Z` offre le même comportement.
+3. Un tracé ou un geste de déplacement et de redimensionnement compte comme une seule action.
+4. L'historique conserve jusqu'à 50 modifications de contenu, fenêtres, groupes et interactions.
+5. Lorsqu'un champ de saisie est actif, le raccourci reste réservé à l'édition du texte.
+
 ### Grouper et dégrouper
 
 1. Sélectionnez au moins deux contenus et utilisez l'action `Grouper`.

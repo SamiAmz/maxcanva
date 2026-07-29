@@ -69,6 +69,7 @@ export function DrawingCanvas() {
     new Map<string, { x: number; y: number }>(),
   );
   const transformerRef = useRef<KonvaTransformer>(null);
+  const previousHistoryLengthRef = useRef(0);
   const [scale, setScale] = useState(1);
   const [selectionBox, setSelectionBox] = useState<SelectionBox | null>(null);
   const [shapeDraft, setShapeDraft] = useState<ShapeDraft | null>(null);
@@ -82,6 +83,7 @@ export function DrawingCanvas() {
   const allContents = useEditorStore((state) => state.contents);
   const windows = useEditorStore((state) => state.windows);
   const interactions = useEditorStore((state) => state.interactions);
+  const historyLength = useEditorStore((state) => state.history.length);
   const selectedContentIds = useEditorStore(
     (state) => state.selectedContentIds,
   );
@@ -506,6 +508,20 @@ export function DrawingCanvas() {
     dragPointerStartRef.current = null;
     resizePositionsRef.current.clear();
   }, [activeTool, activeWindowId]);
+
+  useEffect(() => {
+    if (historyLength < previousHistoryLengthRef.current) {
+      setSelectionBox(null);
+      setShapeDraft(null);
+      setTextEditor(null);
+      setCheckboxLabelEditor(null);
+      setAlignmentGuides([]);
+      dragTransactionRef.current = null;
+      dragPointerStartRef.current = null;
+      resizePositionsRef.current.clear();
+    }
+    previousHistoryLengthRef.current = historyLength;
+  }, [historyLength]);
 
   useEffect(() => {
     const transformer = transformerRef.current;

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useEditorStore } from '../store/useEditorStore';
 import type { Tool } from '../types/drawing';
 
@@ -20,6 +21,32 @@ export function EditorHeader({ onStartSimulation }: EditorHeaderProps) {
     state.windows.find((window) => window.id === state.activeWindowId),
   );
   const activeTool = useEditorStore((state) => state.activeTool);
+  const canUndo = useEditorStore((state) => state.history.length > 0);
+  const undo = useEditorStore((state) => state.undo);
+
+  useEffect(() => {
+    const undoOnShortcut = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.matches(
+          'input, textarea, select, [contenteditable="true"]',
+        )
+      ) {
+        return;
+      }
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        !event.shiftKey &&
+        event.key.toLowerCase() === 'z'
+      ) {
+        event.preventDefault();
+        undo();
+      }
+    };
+
+    window.addEventListener('keydown', undoOnShortcut);
+    return () => window.removeEventListener('keydown', undoOnShortcut);
+  }, [undo]);
 
   return (
     <header className="editor-header">
@@ -35,6 +62,16 @@ export function EditorHeader({ onStartSimulation }: EditorHeaderProps) {
       </div>
 
       <div className="header-actions">
+        <button
+          className="undo-button"
+          type="button"
+          disabled={!canUndo}
+          aria-label="Annuler la dernière action"
+          title="Annuler (Ctrl/Cmd + Z)"
+          onClick={undo}
+        >
+          <span className="undo-icon" aria-hidden="true" />
+        </button>
         <div className="tool-status" aria-label="Outil actuellement sélectionné">
           <span aria-hidden="true" />
           {TOOL_LABELS[activeTool]}
