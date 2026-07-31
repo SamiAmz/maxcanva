@@ -4,7 +4,7 @@ export const PROTOTYPE_PAGE_HEIGHT = 640;
 
 export type DrawingTool = 'pencil' | 'rectangle' | 'circle' | 'text';
 export type WidgetTool = 'checkbox' | 'text-input';
-export type Tool = DrawingTool | WidgetTool | 'select';
+export type Tool = DrawingTool | WidgetTool | 'line' | 'select';
 
 export interface PrototypeWindow {
   id: string;

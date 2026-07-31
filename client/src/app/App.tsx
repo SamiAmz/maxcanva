@@ -29,6 +29,7 @@ export default function App() {
   const activeTool = useEditorStore((state) => state.activeTool);
   const showDrawingControls = [
     'pencil',
+    'line',
     'rectangle',
     'circle',
     'text',

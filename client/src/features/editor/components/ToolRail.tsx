@@ -37,27 +37,33 @@ const TOOLS: Array<{ id: Tool; icon: ReactNode; label: string; shortcut: number 
     ),
   },
   {
+    id: 'line',
+    label: 'Ligne',
+    shortcut: 3,
+    icon: <svg {...iconProps}><path d="M5 19 19 5" /></svg>,
+  },
+  {
     id: 'rectangle',
     label: 'Rectangle',
-    shortcut: 3,
+    shortcut: 4,
     icon: <svg {...iconProps}><rect x="5" y="5" width="14" height="14" rx="1.5" /></svg>,
   },
   {
     id: 'circle',
     label: 'Cercle',
-    shortcut: 4,
+    shortcut: 5,
     icon: <svg {...iconProps}><circle cx="12" cy="12" r="7" /></svg>,
   },
   {
     id: 'text',
     label: 'Texte',
-    shortcut: 5,
+    shortcut: 6,
     icon: <svg {...iconProps}><path d="M7 5h10M12 5v14M9 19h6" /></svg>,
   },
   {
     id: 'checkbox',
     label: 'Case',
-    shortcut: 6,
+    shortcut: 7,
     icon: (
       <svg {...iconProps}>
         <rect x="5" y="5" width="14" height="14" rx="2" />
@@ -68,7 +74,7 @@ const TOOLS: Array<{ id: Tool; icon: ReactNode; label: string; shortcut: number 
   {
     id: 'text-input',
     label: 'Champ',
-    shortcut: 7,
+    shortcut: 8,
     icon: (
       <svg {...iconProps}>
         <rect x="3.5" y="7" width="17" height="10" rx="2" />

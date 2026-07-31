@@ -32,7 +32,7 @@ interface SelectionBox {
 }
 
 interface ShapeDraft {
-  type: 'rectangle' | 'circle';
+  type: 'line' | 'rectangle' | 'circle';
   startX: number;
   startY: number;
   currentX: number;
@@ -158,7 +158,11 @@ export function DrawingCanvas() {
     const point = getPoint(event);
     if (!point) return;
 
-    if (activeTool === 'rectangle' || activeTool === 'circle') {
+    if (
+      activeTool === 'line' ||
+      activeTool === 'rectangle' ||
+      activeTool === 'circle'
+    ) {
       setShapeDraft({
         type: activeTool,
         startX: point.x,
@@ -268,7 +272,24 @@ export function DrawingCanvas() {
     const deltaX = shapeDraft.currentX - shapeDraft.startX;
     const deltaY = shapeDraft.currentY - shapeDraft.startY;
 
-    if (shapeDraft.type === 'rectangle') {
+    if (shapeDraft.type === 'line') {
+      if (Math.hypot(deltaX, deltaY) > 4) {
+        addContent({
+          id: crypto.randomUUID(),
+          windowId: activeWindowId,
+          type: 'pencil',
+          points: [
+            shapeDraft.startX,
+            shapeDraft.startY,
+            shapeDraft.currentX,
+            shapeDraft.currentY,
+          ],
+          color: drawingColor,
+          strokeWidth: drawingWidth,
+          opacity: 1,
+        });
+      }
+    } else if (shapeDraft.type === 'rectangle') {
       const width = Math.abs(deltaX);
       const height = Math.abs(deltaY);
       if (width > 4 && height > 4) {
@@ -584,6 +605,15 @@ export function DrawingCanvas() {
           height: Math.abs(shapeDraft.currentY - shapeDraft.startY),
         }
       : null;
+  const linePreview =
+    shapeDraft?.type === 'line'
+      ? [
+          shapeDraft.startX,
+          shapeDraft.startY,
+          shapeDraft.currentX,
+          shapeDraft.currentY,
+        ]
+      : null;
   const circlePreview =
     shapeDraft?.type === 'circle'
       ? Math.hypot(
@@ -742,6 +772,16 @@ export function DrawingCanvas() {
                 stroke={drawingColor}
                 strokeWidth={drawingWidth}
                 cornerRadius={12}
+                dash={[8, 5]}
+                listening={false}
+              />
+            )}
+            {linePreview && (
+              <Line
+                points={linePreview}
+                stroke={drawingColor}
+                strokeWidth={drawingWidth}
+                lineCap="round"
                 dash={[8, 5]}
                 listening={false}
               />
