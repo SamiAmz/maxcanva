@@ -24,15 +24,3 @@ export interface PasswordHasher {
   hash(password: string): Promise<string>;
   verify(password: string, hash: string): Promise<boolean>;
 }
-
-export interface SessionRecord {
-  id: string;
-  userId: string;
-  expiresAt: string;
-}
-
-export interface SessionRepository {
-  create(userId: string): Promise<SessionRecord>;
-  find(sessionId: string): Promise<SessionRecord | null>;
-  revoke(sessionId: string): Promise<void>;
-}

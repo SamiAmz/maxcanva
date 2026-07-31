@@ -10,11 +10,6 @@
     padding: 0 14px;
   }
 
-  .brand span:last-child,
-  .tool-status {
-    display: none;
-  }
-
   .start-simulation-button {
     width: 38px;
     padding: 0;
@@ -160,7 +155,6 @@
     display: none;
   }
 
-  .control-label,
   .control-divider {
     display: none;
   }

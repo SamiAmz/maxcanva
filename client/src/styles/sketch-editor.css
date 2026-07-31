@@ -50,44 +50,6 @@
   transform: rotate(0.06deg);
 }
 
-.undo-button {
-  display: flex;
-  width: auto;
-  min-width: 82px;
-  height: 34px;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 0 10px;
-  border: 1.5px dashed #8f8d98;
-  border-radius: 5px 8px 5px 7px;
-  color: #4c4b53;
-  background: #f8f7fa;
-  font-family: "Excalifont", cursive;
-  font-size: 14px;
-  font-weight: 400;
-  transform: rotate(-0.25deg);
-}
-
-.undo-button:hover:not(:disabled) {
-  border-style: solid;
-  border-color: #8e89e6;
-  color: #4f4bb8;
-  background: var(--sketch-purple-soft);
-}
-
-.undo-button span {
-  font-family: Arial, sans-serif;
-  font-size: 19px;
-  line-height: 1;
-}
-
-.undo-button:disabled {
-  color: #9c9aa4;
-  background: #f3f2f5;
-  opacity: 0.62;
-}
-
 .start-simulation-button {
   border: 1.5px solid var(--sketch-purple-dark);
   border-radius: 5px 7px 4px 6px;
@@ -106,8 +68,7 @@
 
 .start-simulation-button:active { transform: translate(2px, 2px); box-shadow: none; }
 
-.open-auth-button,
-.sign-out-button {
+.open-auth-button {
   font-family: "Excalifont", cursive;
   font-size: 13px;
   font-weight: 400;

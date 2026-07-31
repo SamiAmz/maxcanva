@@ -21,27 +21,6 @@
   backdrop-filter: blur(16px);
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 17px;
-  font-weight: 750;
-  letter-spacing: -0.025em;
-}
-
-.brand-mark {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border-radius: 10px;
-  color: #fff;
-  background: #5b5bd6;
-  box-shadow: 0 6px 16px rgba(91, 91, 214, 0.22);
-  font-size: 15px;
-}
-
 .document-title {
   display: flex;
   align-items: center;
@@ -59,87 +38,12 @@
   color: #c0c6d0;
 }
 
-.tool-status {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  justify-self: end;
-  padding: 7px 10px;
-  border: 1px solid #e2e6ec;
-  border-radius: 9px;
-  color: #5b6577;
-  background: #fff;
-  font-size: 12px;
-  font-weight: 650;
-  text-align: center;
-}
-
-.tool-status span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #5b5bd6;
-}
-
 /* Navigation principale et choix des outils */
 .header-actions {
   display: flex;
   align-items: center;
   justify-self: end;
   gap: 9px;
-}
-
-.undo-button {
-  display: grid;
-  width: 36px;
-  height: 36px;
-  place-items: center;
-  border: 1px solid #e0e4ea;
-  border-radius: 10px;
-  color: #596477;
-  background: #fff;
-  cursor: pointer;
-}
-
-.undo-icon {
-  position: relative;
-  width: 18px;
-  height: 15px;
-}
-
-.undo-icon::before {
-  position: absolute;
-  top: 3px;
-  left: 4px;
-  width: 11px;
-  height: 9px;
-  border-top: 2px solid currentColor;
-  border-right: 2px solid currentColor;
-  border-radius: 0 9px 0 0;
-  content: "";
-}
-
-.undo-icon::after {
-  position: absolute;
-  top: 0;
-  left: 1px;
-  width: 6px;
-  height: 6px;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  content: "";
-  transform: rotate(135deg);
-}
-
-.undo-button:hover:not(:disabled) {
-  border-color: #d3d0f3;
-  color: #4f46c8;
-  background: #f3f2ff;
-}
-
-.undo-button:disabled {
-  opacity: 0.38;
-  cursor: not-allowed;
 }
 
 .start-simulation-button {
@@ -464,10 +368,6 @@
   font-size: 14px;
   font-weight: 550;
   pointer-events: none;
-}
-
-.canvas-hint-icon {
-  font-size: 21px;
 }
 
 /* Barres contextuelles des outils de dessin et de la sélection */

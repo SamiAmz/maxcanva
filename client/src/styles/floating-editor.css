@@ -32,7 +32,6 @@
   pointer-events: auto;
 }
 
-.brand,
 .document-title,
 .header-actions {
   min-height: 40px;
@@ -42,23 +41,6 @@
   box-shadow:
     0 2px 5px rgba(30, 30, 45, 0.04),
     0 8px 24px rgba(30, 30, 45, 0.06);
-}
-
-.brand {
-  gap: 8px;
-  padding: 4px 11px 4px 4px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.brand-mark {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: #6965db;
-  box-shadow: none;
-  font-size: 13px;
-  font-weight: 700;
 }
 
 .document-title {
@@ -78,24 +60,6 @@
   justify-self: end;
   gap: 7px;
   padding: 4px;
-}
-
-.tool-status {
-  display: none;
-}
-
-.undo-button {
-  width: 32px;
-  height: 32px;
-  border: 0;
-  border-radius: 8px;
-  color: #4c4b53;
-  background: #f1f0f5;
-}
-
-.undo-button:hover:not(:disabled) {
-  color: #4f4bc4;
-  background: #e9e7ff;
 }
 
 .start-simulation-button {
@@ -329,14 +293,6 @@
   min-height: 50px;
   gap: 10px;
   padding: 8px 10px;
-}
-
-.control-label {
-  color: #4c4b53;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0;
-  text-transform: none;
 }
 
 .color-swatch,
@@ -660,12 +616,6 @@ select:focus-visible {
 }
 
 @media (max-width: 1050px) {
-  .brand {
-    width: 42px;
-    padding-right: 5px;
-  }
-
-  .brand > span:last-child,
   .document-title > span:not(.title-separator),
   .title-separator {
     display: none;
@@ -690,15 +640,6 @@ select:focus-visible {
     height: 40px;
     grid-template-columns: auto auto 1fr;
     padding: 0;
-  }
-
-  .brand {
-    width: 42px;
-  }
-
-  .brand span:last-child,
-  .tool-status {
-    display: none;
   }
 
   .document-title {
@@ -890,4 +831,3 @@ select:focus-visible {
     display: none;
   }
 }
-

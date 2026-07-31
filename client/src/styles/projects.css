@@ -184,7 +184,6 @@
   font-size: 11px;
 }
 
-.projects-button,
 .save-project-button {
   height: 36px;
   padding: 0 11px;
@@ -192,12 +191,6 @@
   font-family: "Excalifont", cursive;
   font-size: 13px;
   cursor: pointer;
-}
-
-.projects-button {
-  border: 1.5px dashed #aaa8b4;
-  color: #4e4c55;
-  background: #fff;
 }
 
 .save-project-button {
@@ -223,16 +216,9 @@
   font-size: 14px;
 }
 
-@media (max-width: 1180px) {
-  .account-email { display: none; }
-  .sign-out-button { width: 36px; padding: 0; overflow: hidden; color: transparent; }
-  .sign-out-button::after { content: "↗"; color: #6d7686; }
-}
-
 @media (max-width: 760px) {
   .projects-backdrop { padding: 12px; }
   .projects-dialog { padding: 22px 18px; }
   .projects-dialog-actions { flex-direction: column; }
   .projects-heading h2 { font-size: 25px; }
-  .projects-button { display: none; }
 }

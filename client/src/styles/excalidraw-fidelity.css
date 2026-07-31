@@ -18,42 +18,6 @@
   grid-template-columns: 44px auto 1fr;
 }
 
-.brand {
-  width: 44px;
-  min-height: 44px;
-  padding: 4px;
-  border: 0;
-  border-radius: 8px;
-  background: var(--ui-soft);
-  box-shadow: none;
-}
-
-.brand-name {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-}
-
-.menu-button {
-  display: grid;
-  width: 36px;
-  height: 36px;
-  place-items: center;
-  border-radius: 8px;
-  color: var(--ui-text);
-}
-
-.menu-button svg {
-  width: 20px;
-  height: 20px;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-width: 1.8;
-}
-
 .document-title {
   display: none;
 }
@@ -66,16 +30,6 @@
   border-radius: 8px;
   background: transparent;
   box-shadow: none;
-}
-
-.undo-button {
-  position: fixed;
-  bottom: 16px;
-  left: 16px;
-  width: 44px;
-  height: 36px;
-  border-radius: 8px;
-  background: var(--ui-soft);
 }
 
 .start-simulation-button {
@@ -259,9 +213,4 @@
     bottom: 0;
     padding: 124px 10px 192px;
   }
-
-  .undo-button {
-    display: none;
-  }
 }
-

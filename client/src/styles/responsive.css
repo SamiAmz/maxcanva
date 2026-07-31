@@ -73,7 +73,6 @@
     gap: 6px;
   }
 
-  .undo-button,
   .start-simulation-button {
     position: static;
     display: grid;
@@ -231,10 +230,6 @@
     max-width: calc(100vw - 168px);
   }
 
-  .undo-button {
-    display: grid;
-  }
-
   .tool-rail {
     justify-content: flex-start;
   }
@@ -244,7 +239,6 @@
     flex-basis: 38px;
   }
 
-  .drawing-controls .control-label,
   .drawing-controls .control-divider,
   .selection-controls:not(.is-empty) .selection-summary,
   .selection-controls:not(.is-empty) .selection-summary-icon,

@@ -239,8 +239,7 @@
   cursor: pointer;
 }
 
-.open-auth-button,
-.sign-out-button {
+.open-auth-button {
   height: 36px;
   padding: 0 12px;
   border: 1.5px solid #6965db;
@@ -252,15 +251,7 @@
   cursor: pointer;
 }
 
-.open-auth-button:hover,
-.sign-out-button:hover { background: #f1f0ff; }
-
-.account-menu {
-  display: flex;
-  max-width: 280px;
-  align-items: center;
-  gap: 8px;
-}
+.open-auth-button:hover { background: #f1f0ff; }
 
 .account-avatar {
   display: grid;
@@ -277,27 +268,9 @@
   transform: rotate(-2deg);
 }
 
-.account-email {
-  overflow: hidden;
-  max-width: 130px;
-  color: #556074;
-  font-size: 11px;
-  font-weight: 650;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sign-out-button { color: #5f5f67; border-color: #aaaab3; }
-
-@media (max-width: 900px) {
-  .account-email, .tool-status { display: none; }
-}
-
 @media (max-width: 560px) {
   .auth-backdrop { padding: 12px; }
   .auth-dialog { padding: 24px 20px 22px; box-shadow: 4px 5px 0 rgba(27, 27, 31, 0.3); }
   .auth-dialog h2 { font-size: 27px; }
   .auth-doodle { right: 36px; }
-  .sign-out-button { width: 36px; padding: 0; overflow: hidden; color: transparent; }
-  .sign-out-button::after { content: "↗"; color: #6d7686; }
 }

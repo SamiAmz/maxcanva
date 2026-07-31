@@ -1,64 +1,34 @@
-import type {
-  AuthErrorPayload,
-  AuthSession,
-  SignInInput,
-  SignUpInput,
-} from '@maxcanva/shared';
+import type { AuthSession, SignInInput, SignUpInput } from '@maxcanva/shared';
 import type { AuthGateway } from '@/application/ports/authGateway';
+import { apiRequest } from '@/infrastructure/http/apiRequest';
 
-export class AuthRequestError extends Error {
-  constructor(
-    message: string,
-    readonly code: string,
-    readonly requestId?: string,
-  ) {
-    super(message);
-  }
-}
+export { ApiRequestError as AuthRequestError } from '@/infrastructure/http/apiRequest';
 
-export class HttpAuthGateway implements AuthGateway {
+class HttpAuthGateway implements AuthGateway {
   getSession(): Promise<AuthSession | null> {
-    return this.request<AuthSession>('/api/auth/me', undefined, true);
+    return apiRequest<AuthSession>('/api/auth/me', { allowStatus: 401 });
   }
 
   signIn(input: SignInInput): Promise<AuthSession> {
-    return this.request('/api/auth/login', input);
+    return apiRequest('/api/auth/login', {
+      method: 'POST',
+      json: input,
+      networkErrorMessage: 'Impossible de joindre le serveur. Réessayez plus tard.',
+      fallbackErrorMessage: 'Une erreur est survenue. Réessayez plus tard.',
+    });
   }
 
   signUp(input: SignUpInput): Promise<AuthSession> {
-    return this.request('/api/auth/register', input);
+    return apiRequest('/api/auth/register', {
+      method: 'POST',
+      json: input,
+      networkErrorMessage: 'Impossible de joindre le serveur. Réessayez plus tard.',
+      fallbackErrorMessage: 'Une erreur est survenue. Réessayez plus tard.',
+    });
   }
 
   async signOut(): Promise<void> {
-    await this.request('/api/auth/logout', {});
-  }
-
-  private request<T>(path: string, body?: unknown, allowUnauthorized?: false): Promise<T>;
-  private request<T>(path: string, body: unknown, allowUnauthorized: true): Promise<T | null>;
-  private async request<T>(path: string, body?: unknown, allowUnauthorized = false): Promise<T | null> {
-    let response: Response;
-    try {
-      response = await fetch(path, {
-        method: body === undefined ? 'GET' : 'POST',
-        credentials: 'include',
-        headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
-        body: body === undefined ? undefined : JSON.stringify(body),
-      });
-    } catch {
-      throw new AuthRequestError('Impossible de joindre le serveur. Réessayez plus tard.', 'NETWORK_ERROR');
-    }
-
-    if (allowUnauthorized && response.status === 401) return null;
-    if (!response.ok) {
-      const payload = await response.json().catch(() => null) as AuthErrorPayload | null;
-      throw new AuthRequestError(
-        payload?.error.message ?? 'Une erreur est survenue. Réessayez plus tard.',
-        payload?.error.code ?? 'UNKNOWN_ERROR',
-        payload?.error.requestId,
-      );
-    }
-    if (response.status === 204) return null;
-    return response.json() as Promise<T>;
+    await apiRequest('/api/auth/logout', { method: 'POST', json: {} });
   }
 }
 

@@ -42,13 +42,6 @@
   grid-column: 2;
 }
 
-.undo-button {
-  position: static;
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
-}
-
 .window-card {
   position: relative;
   display: block;
@@ -369,7 +362,4 @@
     display: none;
   }
 
-  .undo-button {
-    display: grid;
-  }
 }

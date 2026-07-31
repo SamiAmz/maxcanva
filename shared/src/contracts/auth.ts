@@ -13,13 +13,4 @@ export interface SignInInput {
   password: string;
 }
 
-export interface SignUpInput extends SignInInput {
-}
-
-export interface AuthErrorPayload {
-  error: {
-    code: string;
-    message: string;
-    requestId: string;
-  };
-}
+export type SignUpInput = SignInInput;
