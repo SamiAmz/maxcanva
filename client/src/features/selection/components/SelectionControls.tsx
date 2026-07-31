@@ -269,7 +269,11 @@ export function SelectionControls() {
               title={hasInteraction ? 'Modifier le lien' : 'Créer un lien'}
               onClick={() => setDialogOpen(true)}
             >
-              <span aria-hidden="true">↗</span>
+              <span className="selection-action-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M7 17L17 7M9 7h8v8" />
+                </svg>
+              </span>
               {hasInteraction ? 'Modifier le lien' : 'Créer un lien'}
             </button>
             <button
@@ -278,7 +282,12 @@ export function SelectionControls() {
               title="Effacer la sélection"
               onClick={deleteSelected}
             >
-              <span aria-hidden="true">⌫</span>
+              <span className="selection-action-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M3.5 10l6.5-6.5h7l3.5 3.5v7L14 20.5H7L3.5 17z" />
+                  <path d="M9 9l6 6M15 9l-6 6" />
+                </svg>
+              </span>
               Effacer
             </button>
           </div>

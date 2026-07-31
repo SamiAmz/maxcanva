@@ -123,7 +123,9 @@ export function InteractionDialog({ open, onClose }: InteractionDialogProps) {
             onClick={onClose}
             aria-label="Fermer"
           >
-            ×
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
           </button>
         </div>
 
@@ -143,7 +145,12 @@ export function InteractionDialog({ open, onClose }: InteractionDialogProps) {
               aria-pressed={type === 'button'}
               onClick={() => setType('button')}
             >
-              <span className="interaction-type-icon" aria-hidden="true">▣</span>
+              <span className="interaction-type-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <rect x="5" y="5" width="14" height="14" rx="1" />
+                  <rect x="8" y="8" width="8" height="8" rx="1" />
+                </svg>
+              </span>
               <span>
                 <strong>Bouton</strong>
                 <small>Une zone cliquable</small>
@@ -155,7 +162,11 @@ export function InteractionDialog({ open, onClose }: InteractionDialogProps) {
               aria-pressed={type === 'link'}
               onClick={() => setType('link')}
             >
-              <span className="interaction-type-icon" aria-hidden="true">↗</span>
+              <span className="interaction-type-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M7 17L17 7M9 7h8v8" />
+                </svg>
+              </span>
               <span>
                 <strong>Hyperlien</strong>
                 <small>Une adresse web externe</small>
