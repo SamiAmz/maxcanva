@@ -31,3 +31,23 @@ drop trigger if exists users_set_updated_at on public.users;
 create trigger users_set_updated_at
 before update on public.users
 for each row execute function public.set_updated_at();
+
+create table if not exists public.projects (
+  id uuid primary key,
+  owner_id uuid not null references public.users(id) on delete cascade,
+  title text not null,
+  document jsonb not null,
+  revision integer not null default 1 check (revision > 0),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists projects_owner_updated_idx
+  on public.projects (owner_id, updated_at desc);
+
+alter table public.projects enable row level security;
+
+drop trigger if exists projects_set_updated_at on public.projects;
+create trigger projects_set_updated_at
+before update on public.projects
+for each row execute function public.set_updated_at();

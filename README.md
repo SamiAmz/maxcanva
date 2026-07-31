@@ -14,6 +14,10 @@ npm run dev
 La commande `npm run build` vérifie les trois workspaces puis produit la version
 de production du client.
 
+Avant le premier lancement, copiez `server/.env.example` vers `server/.env`,
+configurez les clés Supabase et exécutez
+`server/supabase/migrations/001_auth_users.sql` dans l'éditeur SQL Supabase.
+
 ## Organisation du dépôt
 
 ```text
@@ -127,6 +131,20 @@ persistante; l'outil actif, la sélection et l'historique ne sont donc pas inclu
 dans un fichier ou une sauvegarde.
 
 Lorsqu'un contenu est supprimé, le store nettoie aussi les interactions qui le référencent. Cette règle évite les références invalides.
+
+## Sauvegarde des projets
+
+- L'éditeur conserve automatiquement un brouillon dans le stockage local du
+  navigateur. Le travail en cours survit donc à un rechargement, même sans
+  connexion.
+- Ce brouillon local n'apparaît pas dans « Mes projets » et n'est pas une
+  sauvegarde de compte.
+- Un utilisateur connecté peut créer, ouvrir, modifier et supprimer ses projets
+  Supabase depuis le modal « Mes projets ».
+- Chaque requête de projet est authentifiée par le cookie JWT et filtrée par
+  `owner_id`; un utilisateur ne peut donc pas accéder aux projets d'un autre.
+- La colonne `revision` empêche l'écrasement silencieux d'une version modifiée
+  dans une autre session.
 
 ## Styles
 

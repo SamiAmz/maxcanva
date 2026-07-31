@@ -411,4 +411,30 @@ export const useEditorStore = create<EditorState>((set) => ({
         selectedContentIds: [],
       };
     }),
+  loadProjectDocument: (document) =>
+    set((state) => ({
+      projectTitle: document.title,
+      windows: document.windows,
+      activeWindowId: document.windows[0]?.id ?? state.activeWindowId,
+      contents: document.contents,
+      groups: document.groups,
+      interactions: document.interactions,
+      selectedContentIds: [],
+      history: [],
+      activeTool: 'pencil',
+    })),
+  createBlankProject: () => {
+    const id = crypto.randomUUID();
+    set({
+      projectTitle: 'Sans titre',
+      windows: [{ id, name: 'Fenêtre 1' }],
+      activeWindowId: id,
+      contents: [],
+      groups: [],
+      interactions: [],
+      selectedContentIds: [],
+      history: [],
+      activeTool: 'pencil',
+    });
+  },
 }));

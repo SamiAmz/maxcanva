@@ -3,6 +3,7 @@ import type {
   ContentGroup,
   InteractionType,
   PrototypeInteraction,
+  ProjectDocument,
   PrototypeWindow,
   Tool,
 } from '@maxcanva/shared';
@@ -59,6 +60,8 @@ export interface EditorState {
   updatePencilPoints: (id: string, points: number[]) => void;
   updateCheckboxLabel: (id: string, label: string) => void;
   undo: () => void;
+  loadProjectDocument: (document: ProjectDocument) => void;
+  createBlankProject: () => void;
 }
 
 export type EditorSnapshot = Pick<

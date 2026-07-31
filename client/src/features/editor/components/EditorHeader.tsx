@@ -5,8 +5,11 @@ import { useEditorStore } from '@/features/editor/store/useEditorStore';
 interface EditorHeaderProps {
   session: AuthSession | null;
   onOpenAuth: () => void;
+  onOpenProjects: () => void;
+  onSaveProject: () => void;
   onSignOut: () => void;
   onStartSimulation: () => void;
+  savingProject: boolean;
 }
 
 const TOOL_LABELS = {
@@ -19,7 +22,15 @@ const TOOL_LABELS = {
   'text-input': 'Champ de texte actif',
 } satisfies Record<Tool, string>;
 
-export function EditorHeader({ session, onOpenAuth, onSignOut, onStartSimulation }: EditorHeaderProps) {
+export function EditorHeader({
+  session,
+  onOpenAuth,
+  onOpenProjects,
+  onSaveProject,
+  onSignOut,
+  onStartSimulation,
+  savingProject,
+}: EditorHeaderProps) {
   const activeWindow = useEditorStore((state) =>
     state.windows.find((window) => window.id === state.activeWindowId),
   );
@@ -72,13 +83,22 @@ export function EditorHeader({ session, onOpenAuth, onSignOut, onStartSimulation
 
       <div className="header-actions">
         {session ? (
-          <div className="account-menu">
-            <span className="account-avatar" aria-hidden="true">{session.user.email[0]?.toUpperCase()}</span>
-            <span className="account-email" title={session.user.email}>{session.user.email}</span>
-            <button className="sign-out-button" type="button" onClick={onSignOut}>Déconnexion</button>
-          </div>
+          <>
+            <button className="projects-button" type="button" onClick={onOpenProjects}>Mes projets</button>
+            <button className="save-project-button" type="button" disabled={savingProject} onClick={onSaveProject}>
+              {savingProject ? 'Sauvegarde…' : 'Sauvegarder'}
+            </button>
+            <div className="account-menu">
+              <span className="account-avatar" aria-hidden="true">{session.user.email[0]?.toUpperCase()}</span>
+              <span className="account-email" title={session.user.email}>{session.user.email}</span>
+              <button className="sign-out-button" type="button" onClick={onSignOut}>Déconnexion</button>
+            </div>
+          </>
         ) : (
-          <button className="open-auth-button" type="button" onClick={onOpenAuth}>Se connecter</button>
+          <>
+            <button className="save-project-button" type="button" onClick={onOpenAuth}>Sauvegarder</button>
+            <button className="open-auth-button" type="button" onClick={onOpenAuth}>Se connecter</button>
+          </>
         )}
         <button
           className="undo-button"

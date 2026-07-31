@@ -14,3 +14,9 @@ export interface ProjectRepository {
   save(ownerId: string, input: SaveProjectInput): Promise<StoredProject>;
   delete(ownerId: string, projectId: string): Promise<void>;
 }
+
+export class ProjectConflictError extends Error {
+  constructor() {
+    super('The project was modified by another session');
+  }
+}
