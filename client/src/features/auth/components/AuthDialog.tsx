@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import type { AuthSession } from '@maxcanva/shared';
+import { AppLogo } from '@/components/AppLogo';
 import {
   getAuthFeedback,
   validateAuthFields,
@@ -120,7 +121,7 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
       <section className="auth-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <button className="auth-close-button" type="button" aria-label="Fermer" disabled={submitting} onClick={onClose}>×</button>
         <div className="auth-brand">
-          <span className="auth-brand-mark" aria-hidden="true">M</span>
+          <AppLogo className="auth-brand-logo" />
           <span>MaxCanva</span>
         </div>
         <div className="auth-doodle" aria-hidden="true">✦</div>

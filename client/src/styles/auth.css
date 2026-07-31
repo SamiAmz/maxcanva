@@ -64,19 +64,6 @@
   font-size: 18px;
 }
 
-.auth-brand-mark {
-  display: grid;
-  width: 35px;
-  height: 35px;
-  place-items: center;
-  border: 2px solid #6965db;
-  border-radius: 5px 8px 4px 7px;
-  background: #eeedff;
-  font-family: "Excalifont", cursive;
-  font-size: 18px;
-  transform: rotate(-3deg);
-}
-
 .auth-doodle {
   position: absolute;
   top: 72px;

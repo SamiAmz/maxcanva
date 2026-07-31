@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AuthSession } from '@maxcanva/shared';
+import { AppLogo } from '@/components/AppLogo';
 import { useEditorStore } from '@/features/editor/store/useEditorStore';
 
 interface EditorHeaderProps {
@@ -93,6 +94,7 @@ export function EditorHeader({
   return (
     <header className="editor-header">
       <div className="document-title">
+        <AppLogo className="editor-brand-logo" label="MaxCanva" />
         <input
           className="project-title-input"
           value={projectTitle}

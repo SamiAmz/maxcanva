@@ -15,6 +15,10 @@
   transform: none;
 }
 
+.document-title > span.editor-brand-logo {
+  display: inline-grid;
+}
+
 .header-menu-anchor { position: relative; }
 
 .project-menu-trigger,
