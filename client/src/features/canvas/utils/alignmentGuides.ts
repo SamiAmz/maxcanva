@@ -1,4 +1,5 @@
 import type { ContentBounds } from '@/domain/project/contentGeometry';
+import { PROTOTYPE_PAGE_HEIGHT, PROTOTYPE_PAGE_WIDTH } from '@maxcanva/shared';
 
 export interface AlignmentGuide {
   orientation: 'vertical' | 'horizontal';
@@ -59,14 +60,14 @@ export function getAlignmentSnap(
     y: movingBounds.y + rawDeltaY,
   };
   const xTargets: Target[] = [
-    { kind: 'start', value: 0, start: 0, end: 640 },
-    { kind: 'center', value: 480, start: 0, end: 640 },
-    { kind: 'end', value: 960, start: 0, end: 640 },
+    { kind: 'start', value: 0, start: 0, end: PROTOTYPE_PAGE_HEIGHT },
+    { kind: 'center', value: PROTOTYPE_PAGE_WIDTH / 2, start: 0, end: PROTOTYPE_PAGE_HEIGHT },
+    { kind: 'end', value: PROTOTYPE_PAGE_WIDTH, start: 0, end: PROTOTYPE_PAGE_HEIGHT },
   ];
   const yTargets: Target[] = [
-    { kind: 'start', value: 0, start: 0, end: 960 },
-    { kind: 'center', value: 320, start: 0, end: 960 },
-    { kind: 'end', value: 640, start: 0, end: 960 },
+    { kind: 'start', value: 0, start: 0, end: PROTOTYPE_PAGE_WIDTH },
+    { kind: 'center', value: PROTOTYPE_PAGE_HEIGHT / 2, start: 0, end: PROTOTYPE_PAGE_WIDTH },
+    { kind: 'end', value: PROTOTYPE_PAGE_HEIGHT, start: 0, end: PROTOTYPE_PAGE_WIDTH },
   ];
 
   otherBounds.forEach((bounds) => {
@@ -146,7 +147,7 @@ export function getAlignmentSnap(
       position: xSnap.target.value,
       start: Math.max(0, Math.min(snappedBounds.y, xSnap.target.start) - 12),
       end: Math.min(
-        640,
+        PROTOTYPE_PAGE_HEIGHT,
         Math.max(
           snappedBounds.y + snappedBounds.height,
           xSnap.target.end,
@@ -160,7 +161,7 @@ export function getAlignmentSnap(
       position: ySnap.target.value,
       start: Math.max(0, Math.min(snappedBounds.x, ySnap.target.start) - 12),
       end: Math.min(
-        960,
+        PROTOTYPE_PAGE_WIDTH,
         Math.max(
           snappedBounds.x + snappedBounds.width,
           ySnap.target.end,

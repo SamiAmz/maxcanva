@@ -1,8 +1,11 @@
 import { useEffect } from 'react';
-import type { Tool } from '@maxcanva/shared';
+import type { AuthSession, Tool } from '@maxcanva/shared';
 import { useEditorStore } from '@/features/editor/store/useEditorStore';
 
 interface EditorHeaderProps {
+  session: AuthSession | null;
+  onOpenAuth: () => void;
+  onSignOut: () => void;
   onStartSimulation: () => void;
 }
 
@@ -16,7 +19,7 @@ const TOOL_LABELS = {
   'text-input': 'Champ de texte actif',
 } satisfies Record<Tool, string>;
 
-export function EditorHeader({ onStartSimulation }: EditorHeaderProps) {
+export function EditorHeader({ session, onOpenAuth, onSignOut, onStartSimulation }: EditorHeaderProps) {
   const activeWindow = useEditorStore((state) =>
     state.windows.find((window) => window.id === state.activeWindowId),
   );
@@ -68,6 +71,15 @@ export function EditorHeader({ onStartSimulation }: EditorHeaderProps) {
       </div>
 
       <div className="header-actions">
+        {session ? (
+          <div className="account-menu">
+            <span className="account-avatar" aria-hidden="true">{session.user.email[0]?.toUpperCase()}</span>
+            <span className="account-email" title={session.user.email}>{session.user.email}</span>
+            <button className="sign-out-button" type="button" onClick={onSignOut}>Déconnexion</button>
+          </div>
+        ) : (
+          <button className="open-auth-button" type="button" onClick={onOpenAuth}>Se connecter</button>
+        )}
         <button
           className="undo-button"
           type="button"
@@ -76,7 +88,8 @@ export function EditorHeader({ onStartSimulation }: EditorHeaderProps) {
           title="Annuler (Ctrl/Cmd + Z)"
           onClick={undo}
         >
-          <span className="undo-icon" aria-hidden="true" />
+          <span aria-hidden="true">←</span>
+          Retour
         </button>
         <div className="tool-status" aria-label="Outil actuellement sélectionné">
           <span aria-hidden="true" />

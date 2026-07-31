@@ -58,7 +58,7 @@ Les contenus ne sont pas stockés directement dans une fenêtre. Chaque contenu 
 ### Dessiner
 
 1. La barre d'outils permet de choisir le crayon, le rectangle, le cercle ou le texte.
-2. `DrawingCanvas` convertit les événements du pointeur en coordonnées logiques 960×640.
+2. `DrawingCanvas` convertit les événements du pointeur en coordonnées logiques 1100×640.
 3. Un glissement dessine un trait ou une forme; un clic place l'éditeur de texte.
 4. Le nouveau `CanvasContent` est ajouté à `useEditorStore`.
 5. `CanvasContentShape` fournit le même rendu à l'éditeur, aux miniatures et à la simulation.

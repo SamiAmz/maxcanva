@@ -1,4 +1,6 @@
 export const PROJECT_DOCUMENT_VERSION = 1 as const;
+export const PROTOTYPE_PAGE_WIDTH = 1100;
+export const PROTOTYPE_PAGE_HEIGHT = 640;
 
 export type DrawingTool = 'pencil' | 'rectangle' | 'circle' | 'text';
 export type WidgetTool = 'checkbox' | 'text-input';

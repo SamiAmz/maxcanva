@@ -14,6 +14,12 @@ export interface UserRepository {
   ): Promise<UserRecord>;
 }
 
+export class UserEmailAlreadyExistsError extends Error {
+  constructor() {
+    super('A user with this email already exists');
+  }
+}
+
 export interface PasswordHasher {
   hash(password: string): Promise<string>;
   verify(password: string, hash: string): Promise<boolean>;

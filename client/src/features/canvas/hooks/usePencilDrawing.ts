@@ -23,7 +23,7 @@ export function usePencilDrawing(scale: number) {
     if (!position) return null;
 
     return {
-      // Le store conserve toujours les coordonnées logiques de la page (960x640).
+      // Le store conserve toujours les coordonnées logiques de la page.
       x: position.x / scale,
       y: position.y / scale,
     };

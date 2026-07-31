@@ -1,8 +1,10 @@
 @import "./styles/fonts.css";
 @import "./styles/editor.css";
 @import "./styles/dialogs-and-simulation.css";
+@import "./styles/auth.css";
 @import "./styles/base-responsive.css";
 @import "./styles/floating-editor.css";
 @import "./styles/excalidraw-fidelity.css";
 @import "./styles/editor-ergonomics.css";
 @import "./styles/responsive.css";
+@import "./styles/sketch-editor.css";

@@ -3,6 +3,7 @@ import type { KonvaEventObject } from 'konva/lib/Node';
 import type { Shape as KonvaShape } from 'konva/lib/Shape';
 import type { Transformer as KonvaTransformer } from 'konva/lib/shapes/Transformer';
 import { Circle, Layer, Line, Rect, Stage, Transformer } from 'react-konva';
+import { PROTOTYPE_PAGE_HEIGHT, PROTOTYPE_PAGE_WIDTH } from '@maxcanva/shared';
 import { useEditorStore } from '@/features/editor/store/useEditorStore';
 import { usePencilDrawing } from '../hooks/usePencilDrawing';
 import { InteractionOverlay } from '@/features/interactions/components/InteractionOverlay';
@@ -16,9 +17,10 @@ import {
   type AlignmentGuide,
 } from '../utils/alignmentGuides';
 
-const PAGE_WIDTH = 960;
-const PAGE_HEIGHT = 640;
-const PAGE_PADDING = 48;
+const PAGE_WIDTH = PROTOTYPE_PAGE_WIDTH;
+const PAGE_HEIGHT = PROTOTYPE_PAGE_HEIGHT;
+const PAGE_PADDING = 20;
+const MAX_DISPLAY_SCALE = 1.2;
 
 interface SelectionBox {
   startX: number;
@@ -119,7 +121,7 @@ export function DrawingCanvas() {
   const getPoint = (event: KonvaEventObject<PointerEvent>) => {
     const position = event.target.getStage()?.getPointerPosition();
     if (!position) return null;
-    // L'affichage peut être réduit, mais les données restent en 960x640.
+    // L'affichage est responsive, mais les données restent en coordonnées logiques.
     return { x: position.x / scale, y: position.y / scale };
   };
 
@@ -493,7 +495,11 @@ export function DrawingCanvas() {
       const availableWidth = container.clientWidth - PAGE_PADDING * 2;
       const availableHeight = container.clientHeight - PAGE_PADDING * 2;
       setScale(
-        Math.min(1, availableWidth / PAGE_WIDTH, availableHeight / PAGE_HEIGHT),
+        Math.min(
+          MAX_DISPLAY_SCALE,
+          availableWidth / PAGE_WIDTH,
+          availableHeight / PAGE_HEIGHT,
+        ),
       );
     };
 
@@ -573,8 +579,8 @@ export function DrawingCanvas() {
       >
         {contents.length === 0 && (
           <div className="canvas-hint" aria-hidden="true">
-            <span className="canvas-hint-icon">✎</span>
-            <span>Commencez à créer</span>
+            <span className="canvas-hint-spark">✦</span>
+            <span>À vous de dessiner !</span>
           </div>
         )}
 

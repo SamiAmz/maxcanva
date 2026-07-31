@@ -1,7 +1,6 @@
 export interface AuthenticatedUser {
   id: string;
   email: string;
-  displayName: string;
 }
 
 export interface AuthSession {
@@ -15,5 +14,12 @@ export interface SignInInput {
 }
 
 export interface SignUpInput extends SignInInput {
-  displayName: string;
+}
+
+export interface AuthErrorPayload {
+  error: {
+    code: string;
+    message: string;
+    requestId: string;
+  };
 }

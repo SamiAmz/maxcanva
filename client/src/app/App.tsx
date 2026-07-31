@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import type { AuthSession } from '@maxcanva/shared';
+import { AuthDialog } from '@/features/auth/components/AuthDialog';
 import { DrawingCanvas } from '@/features/canvas/components/DrawingCanvas';
 import { DrawingControls } from '@/features/canvas/components/DrawingControls';
 import { EditorHeader } from '@/features/editor/components/EditorHeader';
@@ -8,9 +10,12 @@ import { SelectionControls } from '@/features/selection/components/SelectionCont
 import { SimulationView } from '@/features/simulation/components/SimulationView';
 import { WindowsPanel } from '@/features/windows/components/WindowsPanel';
 import '@/styles.css';
+import { authGateway } from '@/infrastructure/auth/httpAuthGateway';
 
 export default function App() {
   const [simulationOpen, setSimulationOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [session, setSession] = useState<AuthSession | null>(null);
   const activeTool = useEditorStore((state) => state.activeTool);
   const showDrawingControls = [
     'pencil',
@@ -19,9 +24,27 @@ export default function App() {
     'text',
   ].includes(activeTool);
 
+  useEffect(() => {
+    void authGateway.getSession().then(setSession).catch(() => setSession(null));
+  }, []);
+
+  const closeAuth = useCallback(() => setAuthOpen(false), []);
+  const signOut = useCallback(async () => {
+    try {
+      await authGateway.signOut();
+    } finally {
+      setSession(null);
+    }
+  }, []);
+
   return (
     <div className="editor-shell">
-      <EditorHeader onStartSimulation={() => setSimulationOpen(true)} />
+      <EditorHeader
+        session={session}
+        onOpenAuth={() => setAuthOpen(true)}
+        onSignOut={() => void signOut()}
+        onStartSimulation={() => setSimulationOpen(true)}
+      />
       <ToolRail />
       <WindowsPanel />
       <DrawingCanvas />
@@ -34,6 +57,11 @@ export default function App() {
       <SimulationView
         open={simulationOpen}
         onClose={() => setSimulationOpen(false)}
+      />
+      <AuthDialog
+        open={authOpen}
+        onClose={closeAuth}
+        onAuthenticated={setSession}
       />
     </div>
   );

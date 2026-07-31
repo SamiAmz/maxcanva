@@ -1,0 +1,527 @@
+/* Langage visuel manuscrit partagé avec la modale d'authentification. */
+.editor-shell {
+  --sketch-ink: #1b1b1f;
+  --sketch-purple: #6965db;
+  --sketch-purple-dark: #4f4bb8;
+  --sketch-purple-soft: #eeedff;
+  --sketch-paper: #fff;
+  --sketch-muted: #6f6f78;
+  background-color: #fbfbfd;
+  background-image: radial-gradient(rgba(105, 101, 219, 0.34) 1px, transparent 1.15px);
+  background-position: 10px 10px;
+  background-size: 24px 24px;
+}
+
+.editor-header {
+  font-family: "Assistant", system-ui, sans-serif;
+}
+
+.document-title,
+.header-actions,
+.tool-rail,
+.windows-panel,
+.drawing-controls,
+.selection-controls {
+  border: 1.5px solid var(--sketch-ink);
+  background: var(--sketch-paper);
+  box-shadow: 3px 3px 0 rgba(27, 27, 31, 0.2);
+}
+
+.document-title {
+  border-radius: 5px 8px 5px 7px;
+  transform: rotate(-0.08deg);
+}
+
+.project-title-input {
+  font-family: "Excalifont", cursive;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.document-title strong {
+  color: var(--sketch-muted);
+  font-weight: 600;
+}
+
+.title-separator { color: #aaa8b4; }
+
+.header-actions {
+  border-radius: 7px 5px 8px 5px;
+  transform: rotate(0.06deg);
+}
+
+.undo-button {
+  display: flex;
+  width: auto;
+  min-width: 82px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1.5px dashed #8f8d98;
+  border-radius: 5px 8px 5px 7px;
+  color: #4c4b53;
+  background: #f8f7fa;
+  font-family: "Excalifont", cursive;
+  font-size: 14px;
+  font-weight: 400;
+  transform: rotate(-0.25deg);
+}
+
+.undo-button:hover:not(:disabled) {
+  border-style: solid;
+  border-color: #8e89e6;
+  color: #4f4bb8;
+  background: var(--sketch-purple-soft);
+}
+
+.undo-button span {
+  font-family: Arial, sans-serif;
+  font-size: 19px;
+  line-height: 1;
+}
+
+.undo-button:disabled {
+  color: #9c9aa4;
+  background: #f3f2f5;
+  opacity: 0.62;
+}
+
+.start-simulation-button {
+  border: 1.5px solid var(--sketch-purple-dark);
+  border-radius: 5px 7px 4px 6px;
+  background: var(--sketch-purple);
+  box-shadow: 2px 2px 0 #35327c;
+  font-family: "Excalifont", cursive;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.start-simulation-button:hover {
+  background: #5b57c8;
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #35327c;
+}
+
+.start-simulation-button:active { transform: translate(2px, 2px); box-shadow: none; }
+
+.open-auth-button,
+.sign-out-button {
+  font-family: "Excalifont", cursive;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.tool-rail {
+  border-radius: 7px 10px 6px 9px;
+  box-shadow: 4px 4px 0 rgba(27, 27, 31, 0.2);
+  transform: translateX(-50%) rotate(-0.1deg);
+}
+
+.tool-button {
+  border: 1px solid transparent;
+  border-radius: 5px 7px 5px 6px;
+}
+
+.tool-button:hover {
+  border-color: #cbc9d4;
+  background: #f5f4f8;
+}
+
+.tool-button.is-active {
+  border-color: #a7a3ef;
+  color: var(--sketch-purple-dark);
+  background: var(--sketch-purple-soft);
+  box-shadow: 1.5px 1.5px 0 #a7a3ef;
+  transform: rotate(-1deg);
+}
+
+.tool-button:nth-of-type(even).is-active { transform: rotate(1deg); }
+.tool-shortcut { font-family: "Excalifont", cursive; }
+
+.tool-rail-divider {
+  width: 1px;
+  background: transparent;
+  border-left: 1px dashed #aaa8b4;
+}
+
+.windows-panel {
+  border-radius: 7px 11px 6px 9px;
+  box-shadow: 4px 5px 0 rgba(27, 27, 31, 0.18);
+  transform: rotate(0.08deg);
+}
+
+.windows-panel::after {
+  position: absolute;
+  right: 18px;
+  bottom: 10px;
+  width: 34px;
+  height: 8px;
+  border-top: 2px solid #a5a2f2;
+  border-radius: 50%;
+  content: "";
+  transform: rotate(-5deg);
+  pointer-events: none;
+}
+
+.windows-panel-header h2 {
+  font-family: "Excalifont", cursive;
+  font-size: 17px;
+  font-weight: 400;
+}
+
+.windows-panel-header div > span {
+  border: 1px solid #d2d0dd;
+  border-radius: 50% 45% 52% 43%;
+  font-family: "Excalifont", cursive;
+  background: #fff;
+}
+
+.add-window-button {
+  border: 1.5px solid var(--sketch-purple);
+  border-radius: 5px 7px 4px 6px;
+  color: var(--sketch-purple-dark);
+  background: var(--sketch-purple-soft);
+  box-shadow: 2px 2px 0 #a5a2f2;
+  font-family: "Excalifont", cursive;
+}
+
+.add-window-button:hover {
+  border-color: var(--sketch-purple-dark);
+  background: #e4e2ff;
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #a5a2f2;
+}
+
+.window-card {
+  border: 1px solid transparent;
+  border-radius: 5px 8px 5px 7px;
+}
+
+.window-card:hover {
+  border-color: #cfced7;
+  background: #fafafd;
+}
+
+.window-card.is-active {
+  border: 1.5px solid #8e89e6;
+  background: var(--sketch-purple-soft);
+  box-shadow: 2px 2px 0 #b9b6f1;
+  transform: rotate(-0.15deg);
+}
+
+.window-preview {
+  border: 1.5px solid #aaa8b4;
+  border-radius: 3px 5px 3px 4px;
+  background: #fff;
+  box-shadow: 1.5px 1.5px 0 #d7d5df;
+}
+
+.window-number {
+  border: 1px solid #c5c3ce;
+  border-radius: 4px 6px 3px 5px;
+  font-family: "Excalifont", cursive;
+  background: #fff;
+}
+
+.window-name-input {
+  font-family: "Excalifont", cursive;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.window-card-footer small { color: #888691; }
+
+.delete-window-button {
+  border: 1px solid #ccc9d4;
+  border-radius: 4px 6px 3px 5px;
+  box-shadow: 1px 1px 0 #bbb9c4;
+}
+
+.canvas-workspace {
+  background-color: transparent;
+  background-image: none;
+}
+
+.drawing-page {
+  border: 1.5px solid #777680;
+  box-shadow: 5px 6px 0 rgba(27, 27, 31, 0.14);
+  transform: rotate(-0.035deg);
+}
+
+.canvas-hint {
+  gap: 9px;
+  color: #6965db;
+  font-family: "Excalifont", cursive;
+  font-size: 20px;
+  font-weight: 400;
+  transform: rotate(-1deg);
+}
+
+.canvas-hint::after {
+  position: absolute;
+  width: 138px;
+  height: 12px;
+  margin-top: 40px;
+  border-top: 2px solid #a5a2f2;
+  border-radius: 50%;
+  content: "";
+  transform: rotate(-2deg);
+}
+
+.canvas-hint-spark {
+  color: #f08c46;
+  font-size: 22px;
+  transform: rotate(12deg);
+}
+
+.drawing-controls,
+.selection-controls {
+  border-radius: 6px 9px 5px 8px;
+  box-shadow: 3px 4px 0 rgba(27, 27, 31, 0.2);
+  transform: translateX(-50%) rotate(0.08deg);
+}
+
+.shape-style-group {
+  border: 1px dashed #c3c1cb;
+  border-radius: 5px 7px 4px 6px;
+  background: #fff;
+}
+
+.shape-style-label,
+.selection-summary,
+.button-label {
+  font-family: "Excalifont", cursive;
+  font-weight: 400;
+}
+
+.shape-style-label {
+  color: #67656f;
+  font-size: 10px;
+  text-transform: none;
+}
+
+.shape-style-group .color-swatch,
+.shape-style-group .custom-color,
+.shape-style-group .width-button {
+  border-color: #aaa8b4;
+  border-radius: 3px 5px 3px 4px;
+}
+
+.shape-style-group .color-swatch.is-selected {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--sketch-purple);
+  transform: rotate(-2deg);
+}
+
+.selection-controls button {
+  border-radius: 4px 6px 4px 5px;
+}
+
+/* Mode simulation : une scène sombre, mais le même trait dessiné. */
+.simulation-overlay {
+  grid-template-rows: 76px minmax(0, 1fr);
+  color: #f8f7ff;
+  background: #151519;
+}
+
+.simulation-header {
+  position: relative;
+  z-index: 4;
+  gap: 16px;
+  padding: 12px 18px;
+  border: 0;
+  background: transparent;
+}
+
+.simulation-header::after {
+  position: absolute;
+  z-index: -1;
+  right: 24%;
+  bottom: 6px;
+  width: 52px;
+  height: 11px;
+  border-top: 2px solid #8f8ae8;
+  border-radius: 50%;
+  content: "";
+  opacity: 0.7;
+  transform: rotate(-3deg);
+}
+
+.simulation-title,
+.simulation-actions {
+  min-height: 50px;
+  padding: 7px 10px;
+  border: 1.5px solid #f3f2f8;
+  border-radius: 6px 9px 5px 8px;
+  background: #24242b;
+  box-shadow: 3px 3px 0 #6965db;
+}
+
+.simulation-title {
+  min-width: 172px;
+  transform: rotate(-0.25deg);
+}
+
+.simulation-title strong {
+  color: #fff;
+  font-family: "Excalifont", cursive;
+  font-size: 17px;
+  font-weight: 400;
+}
+
+.simulation-title small {
+  margin-top: 1px;
+  color: #bab8c4;
+  font-size: 10px;
+}
+
+.simulation-live-dot {
+  width: 11px;
+  height: 11px;
+  border: 2px solid #a7f3c8;
+  border-radius: 3px 6px 3px 5px;
+  background: #37b875;
+  box-shadow: none;
+  transform: rotate(12deg);
+}
+
+.simulation-actions {
+  gap: 7px;
+  transform: rotate(0.15deg);
+}
+
+.simulation-back-button,
+.close-simulation-button {
+  height: 34px;
+  border-radius: 4px 7px 4px 6px;
+  font-family: "Excalifont", cursive;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.simulation-back-button {
+  border: 1px dashed #aaa7b6;
+  color: #e6e4ee;
+  background: transparent;
+}
+
+.simulation-back-button:hover:not(:disabled) {
+  border-style: solid;
+  border-color: #a5a2f2;
+  color: #fff;
+  background: #313039;
+}
+
+.simulation-back-button:disabled { opacity: 0.32; }
+
+.close-simulation-button {
+  border: 1.5px solid #8f8ae8;
+  color: #fff;
+  background: #6965db;
+  box-shadow: 2px 2px 0 #39357e;
+}
+
+.close-simulation-button:hover {
+  background: #5b57c8;
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #39357e;
+}
+
+.close-simulation-button span {
+  border-radius: 3px 5px 3px 4px;
+  background: rgba(255, 255, 255, 0.13);
+  font-family: Arial, sans-serif;
+}
+
+.simulation-workspace {
+  position: relative;
+  background-color: #151519;
+  background-image: radial-gradient(rgba(165, 162, 242, 0.18) 0.8px, transparent 0.8px);
+  background-size: 24px 24px;
+}
+
+.simulation-workspace::before,
+.simulation-workspace::after {
+  position: absolute;
+  color: #6965db;
+  font-family: "Excalifont", cursive;
+  pointer-events: none;
+}
+
+.simulation-workspace::before {
+  top: 30px;
+  left: 42px;
+  content: "△  ✦";
+  font-size: 24px;
+  letter-spacing: 20px;
+  opacity: 0.65;
+  transform: rotate(-8deg);
+}
+
+.simulation-workspace::after {
+  right: 46px;
+  bottom: 28px;
+  content: "○  ◇";
+  color: #f08c46;
+  font-size: 22px;
+  letter-spacing: 18px;
+  opacity: 0.52;
+  transform: rotate(7deg);
+}
+
+.simulation-page {
+  z-index: 1;
+  overflow: hidden;
+  border: 2px solid #f3f2f8;
+  border-radius: 4px 7px 3px 6px;
+  background: #fff;
+  box-shadow:
+    7px 8px 0 #6965db,
+    12px 14px 0 rgba(0, 0, 0, 0.34);
+  transform: rotate(-0.08deg);
+}
+
+.simulation-empty-state {
+  color: #8b8994;
+  font-family: "Excalifont", cursive;
+  font-size: 18px;
+}
+
+.simulation-text-input-widget {
+  border: 1.5px solid #777680;
+  font-family: "Assistant", system-ui, sans-serif;
+}
+
+.simulation-text-input-widget:focus {
+  border-color: #6965db;
+  outline: 2px solid #dcdafe;
+  box-shadow: 2px 2px 0 #a5a2f2;
+}
+
+@media (max-width: 900px) {
+  .tool-rail { transform: translateX(-50%) rotate(-0.1deg); }
+  .windows-panel { transform: none; }
+}
+
+@media (max-width: 640px) {
+  .document-title,
+  .header-actions,
+  .tool-rail,
+  .windows-panel,
+  .drawing-controls,
+  .selection-controls { box-shadow: 2px 2px 0 rgba(27, 27, 31, 0.18); }
+
+  .drawing-controls,
+  .selection-controls { transform: none; }
+
+  .simulation-overlay { grid-template-rows: 64px minmax(0, 1fr); }
+  .simulation-header { padding: 8px 10px; }
+  .simulation-title,
+  .simulation-actions { min-height: 44px; box-shadow: 2px 2px 0 #6965db; }
+  .simulation-title { min-width: 0; }
+  .simulation-title strong { font-size: 15px; }
+  .simulation-page { box-shadow: 4px 5px 0 #6965db; }
+  .simulation-workspace::before,
+  .simulation-workspace::after { display: none; }
+}

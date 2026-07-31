@@ -5,12 +5,13 @@ import type {
   CanvasContent,
   PrototypeInteraction,
 } from '@maxcanva/shared';
+import { PROTOTYPE_PAGE_HEIGHT, PROTOTYPE_PAGE_WIDTH } from '@maxcanva/shared';
 import { getCombinedBounds } from '@/domain/project/contentGeometry';
 import { CanvasContentShape } from '@/features/canvas/components/CanvasContentShape';
 import { useEditorStore } from '@/features/editor/store/useEditorStore';
 
-const PAGE_WIDTH = 960;
-const PAGE_HEIGHT = 640;
+const PAGE_WIDTH = PROTOTYPE_PAGE_WIDTH;
+const PAGE_HEIGHT = PROTOTYPE_PAGE_HEIGHT;
 const PAGE_PADDING = 56;
 
 interface SimulationViewProps {
@@ -105,7 +106,7 @@ export function SimulationView({ open, onClose }: SimulationViewProps) {
       const availableWidth = workspace.clientWidth - PAGE_PADDING * 2;
       const availableHeight = workspace.clientHeight - PAGE_PADDING * 2;
       setScale(
-        Math.min(1, availableWidth / PAGE_WIDTH, availableHeight / PAGE_HEIGHT),
+        Math.min(1.1, availableWidth / PAGE_WIDTH, availableHeight / PAGE_HEIGHT),
       );
     };
 
