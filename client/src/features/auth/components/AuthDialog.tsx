@@ -1,5 +1,13 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import type { AuthSession } from '@maxcanva/shared';
+import {
+  getAuthFeedback,
+  validateAuthFields,
+  type AuthFeedback,
+  type AuthFieldErrors,
+  type AuthMode,
+} from '@/features/auth/authFeedback';
+import { AuthErrorMessage } from '@/features/auth/components/AuthErrorMessage';
 import { AuthRequestError, authGateway } from '@/infrastructure/auth/httpAuthGateway';
 
 interface AuthDialogProps {
@@ -8,66 +16,97 @@ interface AuthDialogProps {
   onAuthenticated: (session: AuthSession) => void;
 }
 
-type AuthMode = 'login' | 'register';
-
 export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) {
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [requestId, setRequestId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<AuthFeedback | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<AuthFieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
   const titleId = useId();
+  const emailErrorId = useId();
+  const passwordErrorId = useId();
+  const confirmPasswordErrorId = useId();
   const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordRef = useRef<HTMLInputElement>(null);
+  const submittingRef = useRef(false);
+
+  useEffect(() => {
+    submittingRef.current = submitting;
+  }, [submitting]);
 
   useEffect(() => {
     if (!open) return;
-    setError(null);
-    setRequestId(null);
+    setFeedback(null);
+    setFieldErrors({});
     window.setTimeout(() => emailRef.current?.focus(), 0);
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !submitting) onClose();
+      if (event.key === 'Escape' && !submittingRef.current) onClose();
     };
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
-  }, [onClose, open, submitting]);
+  }, [onClose, open]);
 
   if (!open) return null;
 
   const switchMode = (nextMode: AuthMode) => {
     setMode(nextMode);
-    setError(null);
-    setRequestId(null);
+    setFeedback(null);
+    setFieldErrors({});
     setPassword('');
     setConfirmPassword('');
   };
 
+  const clearErrorFor = (field: keyof AuthFieldErrors) => {
+    setFieldErrors((current) => ({ ...current, [field]: undefined }));
+    setFeedback(null);
+  };
+
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    setError(null);
-    setRequestId(null);
+    setFeedback(null);
 
-    if (mode === 'register' && password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas.');
+    const validationErrors = validateAuthFields(
+      mode,
+      email,
+      password,
+      confirmPassword,
+    );
+    setFieldErrors(validationErrors);
+    if (Object.keys(validationErrors).length > 0) {
+      if (validationErrors.email) emailRef.current?.focus();
+      else if (validationErrors.password) passwordRef.current?.focus();
+      else confirmPasswordRef.current?.focus();
       return;
     }
 
     setSubmitting(true);
     try {
       const session = mode === 'login'
-        ? await authGateway.signIn({ email, password })
-        : await authGateway.signUp({ email, password });
+        ? await authGateway.signIn({ email: email.trim(), password })
+        : await authGateway.signUp({ email: email.trim(), password });
       onAuthenticated(session);
       setPassword('');
       setConfirmPassword('');
       onClose();
     } catch (caught) {
       if (caught instanceof AuthRequestError) {
-        setError(caught.message);
-        setRequestId(caught.requestId ?? null);
+        const nextFeedback = getAuthFeedback(caught, mode);
+        setFeedback(nextFeedback);
+        if (caught.code === 'INVALID_CREDENTIALS') {
+          passwordRef.current?.focus();
+        }
       } else {
-        setError('Une erreur inattendue est survenue.');
+        setFeedback({
+          title:
+            mode === 'register'
+              ? 'Création du compte impossible'
+              : 'Connexion impossible',
+          message:
+            'Le service est momentanément indisponible. Patientez un instant puis réessayez.',
+        });
       }
     } finally {
       setSubmitting(false);
@@ -92,28 +131,91 @@ export function AuthDialog({ open, onClose, onAuthenticated }: AuthDialogProps) 
             : 'Sauvegardez vos prototypes et retrouvez-les plus tard.'}
         </p>
 
-        <form className="auth-form" onSubmit={submit}>
+        <form className="auth-form" onSubmit={submit} noValidate>
           <label>
             <span>Adresse courriel</span>
-            <input ref={emailRef} type="email" autoComplete="email" required maxLength={254} value={email} onChange={(event) => setEmail(event.target.value)} placeholder="vous@exemple.com" />
+            <input
+              ref={emailRef}
+              type="email"
+              autoComplete="email"
+              required
+              maxLength={254}
+              value={email}
+              aria-invalid={Boolean(fieldErrors.email)}
+              aria-describedby={fieldErrors.email ? emailErrorId : undefined}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                clearErrorFor('email');
+              }}
+              placeholder="vous@exemple.com"
+            />
+            {fieldErrors.email && (
+              <small className="auth-field-error" id={emailErrorId}>
+                {fieldErrors.email}
+              </small>
+            )}
           </label>
           <label>
             <span>Mot de passe</span>
-            <input type="password" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} required minLength={8} maxLength={72} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="8 caractères minimum" />
+            <input
+              ref={passwordRef}
+              type="password"
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              required
+              minLength={8}
+              maxLength={72}
+              value={password}
+              aria-invalid={Boolean(fieldErrors.password)}
+              aria-describedby={fieldErrors.password ? passwordErrorId : undefined}
+              onChange={(event) => {
+                setPassword(event.target.value);
+                clearErrorFor('password');
+              }}
+              placeholder="8 caractères minimum"
+            />
+            {fieldErrors.password && (
+              <small className="auth-field-error" id={passwordErrorId}>
+                {fieldErrors.password}
+              </small>
+            )}
           </label>
           {mode === 'register' && (
             <label>
               <span>Confirmer le mot de passe</span>
-              <input type="password" autoComplete="new-password" required minLength={8} maxLength={72} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Répétez votre mot de passe" />
+              <input
+                ref={confirmPasswordRef}
+                type="password"
+                autoComplete="new-password"
+                required
+                minLength={8}
+                maxLength={72}
+                value={confirmPassword}
+                aria-invalid={Boolean(fieldErrors.confirmPassword)}
+                aria-describedby={
+                  fieldErrors.confirmPassword
+                    ? confirmPasswordErrorId
+                    : undefined
+                }
+                onChange={(event) => {
+                  setConfirmPassword(event.target.value);
+                  clearErrorFor('confirmPassword');
+                }}
+                placeholder="Répétez votre mot de passe"
+              />
+              {fieldErrors.confirmPassword && (
+                <small className="auth-field-error" id={confirmPasswordErrorId}>
+                  {fieldErrors.confirmPassword}
+                </small>
+              )}
             </label>
           )}
 
-          {error && (
-            <div className="auth-error" role="alert">
-              <strong>Impossible de continuer</strong>
-              <span>{error}</span>
-              {requestId && <small>Référence : {requestId}</small>}
-            </div>
+          {feedback && (
+            <AuthErrorMessage
+              feedback={feedback}
+              mode={mode}
+              onSwitchMode={switchMode}
+            />
           )}
 
           <button className="auth-submit-button" type="submit" disabled={submitting}>
