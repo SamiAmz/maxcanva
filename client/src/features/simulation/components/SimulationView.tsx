@@ -169,6 +169,8 @@ export function SimulationView({ open, onClose }: SimulationViewProps) {
           <button
             className="simulation-back-button"
             type="button"
+            aria-label="Revenir à la fenêtre précédente"
+            title="Retour"
             disabled={history.length === 0}
             onClick={goBack}
           >
@@ -177,6 +179,8 @@ export function SimulationView({ open, onClose }: SimulationViewProps) {
           <button
             className="close-simulation-button"
             type="button"
+            aria-label="Quitter la simulation"
+            title="Quitter la simulation"
             onClick={onClose}
           >
             Quitter la simulation

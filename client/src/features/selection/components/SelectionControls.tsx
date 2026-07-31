@@ -262,22 +262,26 @@ export function SelectionControls() {
               )}
             </div>
           )}
-          <button
-            className="link-selection-button"
-            type="button"
-            onClick={() => setDialogOpen(true)}
-          >
-            <span aria-hidden="true">↗</span>
-            {hasInteraction ? 'Modifier le lien' : 'Créer un lien'}
-          </button>
-          <button
-            className="delete-selection-button"
-            type="button"
-            onClick={deleteSelected}
-          >
-            <span aria-hidden="true">⌫</span>
-            Effacer
-          </button>
+          <div className="selection-end-actions">
+            <button
+              className="link-selection-button"
+              type="button"
+              title={hasInteraction ? 'Modifier le lien' : 'Créer un lien'}
+              onClick={() => setDialogOpen(true)}
+            >
+              <span aria-hidden="true">↗</span>
+              {hasInteraction ? 'Modifier le lien' : 'Créer un lien'}
+            </button>
+            <button
+              className="delete-selection-button"
+              type="button"
+              title="Effacer la sélection"
+              onClick={deleteSelected}
+            >
+              <span aria-hidden="true">⌫</span>
+              Effacer
+            </button>
+          </div>
         </>
       )}
       <InteractionDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />

@@ -17,9 +17,10 @@ import {
   type AlignmentGuide,
 } from '../utils/alignmentGuides';
 
-const PAGE_WIDTH = PROTOTYPE_PAGE_WIDTH;
-const PAGE_HEIGHT = PROTOTYPE_PAGE_HEIGHT;
-const PAGE_PADDING = 20;
+const LANDSCAPE_PAGE_WIDTH = PROTOTYPE_PAGE_WIDTH;
+const LANDSCAPE_PAGE_HEIGHT = PROTOTYPE_PAGE_HEIGHT;
+const PORTRAIT_PAGE_WIDTH = PROTOTYPE_PAGE_HEIGHT;
+const PORTRAIT_PAGE_HEIGHT = PROTOTYPE_PAGE_WIDTH;
 const MAX_DISPLAY_SCALE = 1.2;
 
 interface SelectionBox {
@@ -73,6 +74,9 @@ export function DrawingCanvas() {
   const transformerRef = useRef<KonvaTransformer>(null);
   const previousHistoryLengthRef = useRef(0);
   const [scale, setScale] = useState(1);
+  const [portraitViewport, setPortraitViewport] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 560px)').matches,
+  );
   const [selectionBox, setSelectionBox] = useState<SelectionBox | null>(null);
   const [shapeDraft, setShapeDraft] = useState<ShapeDraft | null>(null);
   const [textEditor, setTextEditor] = useState<TextEditor | null>(null);
@@ -117,6 +121,20 @@ export function DrawingCanvas() {
   const keepResizeRatio = selectedContents.some(
     (content) => content.type === 'text',
   );
+  const pageWidth = portraitViewport
+    ? PORTRAIT_PAGE_WIDTH
+    : LANDSCAPE_PAGE_WIDTH;
+  const pageHeight = portraitViewport
+    ? PORTRAIT_PAGE_HEIGHT
+    : LANDSCAPE_PAGE_HEIGHT;
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 560px)');
+    const updateOrientation = () => setPortraitViewport(media.matches);
+    media.addEventListener('change', updateOrientation);
+    updateOrientation();
+    return () => media.removeEventListener('change', updateOrientation);
+  }, []);
 
   const getPoint = (event: KonvaEventObject<PointerEvent>) => {
     const position = event.target.getStage()?.getPointerPosition();
@@ -161,8 +179,8 @@ export function DrawingCanvas() {
       const isCheckbox = activeTool === 'checkbox';
       const width = isCheckbox ? 28 : 240;
       const height = isCheckbox ? 28 : 44;
-      const x = Math.min(point.x, PAGE_WIDTH - width);
-      const y = Math.min(point.y, PAGE_HEIGHT - height);
+      const x = Math.min(point.x, pageWidth - width);
+      const y = Math.min(point.y, pageHeight - height);
 
       addContent(
         isCheckbox
@@ -196,7 +214,7 @@ export function DrawingCanvas() {
       if (isCheckbox) {
         setCheckboxLabelEditor({
           contentId: id,
-          x: Math.min(x + width + 8, PAGE_WIDTH - 300),
+          x: Math.min(x + width + 8, pageWidth - 300),
           y,
           value: '',
           initialValue: '',
@@ -383,11 +401,11 @@ export function DrawingCanvas() {
     const movingBounds = getCombinedBounds(movingContents);
     if (!movingBounds) return;
     const boundedDeltaX = Math.min(
-      PAGE_WIDTH - movingBounds.x - movingBounds.width,
+      pageWidth - movingBounds.x - movingBounds.width,
       Math.max(-movingBounds.x, rawDeltaX),
     );
     const boundedDeltaY = Math.min(
-      PAGE_HEIGHT - movingBounds.y - movingBounds.height,
+      pageHeight - movingBounds.y - movingBounds.height,
       Math.max(-movingBounds.y, rawDeltaY),
     );
 
@@ -406,6 +424,8 @@ export function DrawingCanvas() {
           boundedDeltaX,
           boundedDeltaY,
           6 / scale,
+          pageWidth,
+          pageHeight,
         );
 
     transaction.lastDelta = { x: snapped.deltaX, y: snapped.deltaY };
@@ -492,13 +512,20 @@ export function DrawingCanvas() {
     if (!container) return;
 
     const updateScale = () => {
-      const availableWidth = container.clientWidth - PAGE_PADDING * 2;
-      const availableHeight = container.clientHeight - PAGE_PADDING * 2;
+      const styles = window.getComputedStyle(container);
+      const horizontalPadding =
+        Number.parseFloat(styles.paddingLeft) +
+        Number.parseFloat(styles.paddingRight);
+      const verticalPadding =
+        Number.parseFloat(styles.paddingTop) +
+        Number.parseFloat(styles.paddingBottom);
+      const availableWidth = container.clientWidth - horizontalPadding;
+      const availableHeight = container.clientHeight - verticalPadding;
       setScale(
         Math.min(
           MAX_DISPLAY_SCALE,
-          availableWidth / PAGE_WIDTH,
-          availableHeight / PAGE_HEIGHT,
+          availableWidth / pageWidth,
+          availableHeight / pageHeight,
         ),
       );
     };
@@ -507,7 +534,7 @@ export function DrawingCanvas() {
     observer.observe(container);
     updateScale();
     return () => observer.disconnect();
-  }, []);
+  }, [pageHeight, pageWidth]);
 
   useEffect(() => {
     setSelectionBox(null);
@@ -573,8 +600,8 @@ export function DrawingCanvas() {
       <div
         className="drawing-page"
         style={{
-          width: PAGE_WIDTH * scale,
-          height: PAGE_HEIGHT * scale,
+          width: pageWidth * scale,
+          height: pageHeight * scale,
         }}
       >
         {contents.length === 0 && (
@@ -586,8 +613,8 @@ export function DrawingCanvas() {
 
         <Stage
           key={activeWindowId}
-          width={PAGE_WIDTH * scale}
-          height={PAGE_HEIGHT * scale}
+          width={pageWidth * scale}
+          height={pageHeight * scale}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={finishInteraction}
@@ -595,8 +622,8 @@ export function DrawingCanvas() {
         >
           <Layer scaleX={scale} scaleY={scale}>
             <Rect
-              width={PAGE_WIDTH}
-              height={PAGE_HEIGHT}
+              width={pageWidth}
+              height={pageHeight}
               fill="#ffffff"
               name="canvas-background"
               listening
@@ -623,7 +650,7 @@ export function DrawingCanvas() {
                     contentId: content.id,
                     x: Math.min(
                       content.x + content.width + 8,
-                      PAGE_WIDTH - 300,
+                      pageWidth - 300,
                     ),
                     y: content.y,
                     value: content.label,
@@ -819,8 +846,8 @@ export function DrawingCanvas() {
           <form
             className="canvas-text-editor"
             style={{
-              left: Math.min(textEditor.x * scale, PAGE_WIDTH * scale - 260),
-              top: Math.min(textEditor.y * scale, PAGE_HEIGHT * scale - 38),
+              left: Math.min(textEditor.x * scale, pageWidth * scale - 260),
+              top: Math.min(textEditor.y * scale, pageHeight * scale - 38),
             }}
             onSubmit={(event) => {
               event.preventDefault();
@@ -858,7 +885,7 @@ export function DrawingCanvas() {
               left: checkboxLabelEditor.x * scale,
               top: Math.min(
                 checkboxLabelEditor.y * scale,
-                PAGE_HEIGHT * scale - 48,
+                pageHeight * scale - 48,
               ),
             }}
             onSubmit={(event) => {

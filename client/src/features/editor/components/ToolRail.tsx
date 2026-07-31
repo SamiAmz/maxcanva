@@ -81,6 +81,8 @@ const TOOLS: Array<{ id: Tool; icon: ReactNode; label: string; shortcut: number 
 export function ToolRail() {
   const activeTool = useEditorStore((state) => state.activeTool);
   const setActiveTool = useEditorStore((state) => state.setActiveTool);
+  const canUndo = useEditorStore((state) => state.history.length > 0);
+  const undo = useEditorStore((state) => state.undo);
 
   useEffect(() => {
     const selectToolFromKeyboard = (event: KeyboardEvent) => {
@@ -108,6 +110,20 @@ export function ToolRail() {
 
   return (
     <aside className="tool-rail" aria-label="Outils de création">
+      <button
+        className="tool-button toolbar-undo-button"
+        type="button"
+        disabled={!canUndo}
+        aria-label="Annuler la dernière action"
+        title="Annuler (Ctrl/Cmd + Z)"
+        onClick={undo}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 7 4.5 11.5 9 16" />
+          <path d="M5 11.5h8.2a5.8 5.8 0 0 1 5.8 5.8" />
+        </svg>
+      </button>
+      <span className="tool-rail-divider undo-divider" role="separator" />
       {TOOLS.map((tool) => (
         <Fragment key={tool.id}>
           {tool.id === 'checkbox' && (

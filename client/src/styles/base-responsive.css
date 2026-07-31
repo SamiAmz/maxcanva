@@ -156,8 +156,7 @@
     padding: 0 12px;
   }
 
-  .simulation-title small,
-  .close-simulation-button {
+  .simulation-title small {
     display: none;
   }
 

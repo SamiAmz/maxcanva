@@ -53,6 +53,8 @@ export function getAlignmentSnap(
   rawDeltaX: number,
   rawDeltaY: number,
   tolerance: number,
+  pageWidth = PROTOTYPE_PAGE_WIDTH,
+  pageHeight = PROTOTYPE_PAGE_HEIGHT,
 ): SnapResult {
   const moved = {
     ...movingBounds,
@@ -60,14 +62,14 @@ export function getAlignmentSnap(
     y: movingBounds.y + rawDeltaY,
   };
   const xTargets: Target[] = [
-    { kind: 'start', value: 0, start: 0, end: PROTOTYPE_PAGE_HEIGHT },
-    { kind: 'center', value: PROTOTYPE_PAGE_WIDTH / 2, start: 0, end: PROTOTYPE_PAGE_HEIGHT },
-    { kind: 'end', value: PROTOTYPE_PAGE_WIDTH, start: 0, end: PROTOTYPE_PAGE_HEIGHT },
+    { kind: 'start', value: 0, start: 0, end: pageHeight },
+    { kind: 'center', value: pageWidth / 2, start: 0, end: pageHeight },
+    { kind: 'end', value: pageWidth, start: 0, end: pageHeight },
   ];
   const yTargets: Target[] = [
-    { kind: 'start', value: 0, start: 0, end: PROTOTYPE_PAGE_WIDTH },
-    { kind: 'center', value: PROTOTYPE_PAGE_HEIGHT / 2, start: 0, end: PROTOTYPE_PAGE_WIDTH },
-    { kind: 'end', value: PROTOTYPE_PAGE_HEIGHT, start: 0, end: PROTOTYPE_PAGE_WIDTH },
+    { kind: 'start', value: 0, start: 0, end: pageWidth },
+    { kind: 'center', value: pageHeight / 2, start: 0, end: pageWidth },
+    { kind: 'end', value: pageHeight, start: 0, end: pageWidth },
   ];
 
   otherBounds.forEach((bounds) => {
@@ -147,7 +149,7 @@ export function getAlignmentSnap(
       position: xSnap.target.value,
       start: Math.max(0, Math.min(snappedBounds.y, xSnap.target.start) - 12),
       end: Math.min(
-        PROTOTYPE_PAGE_HEIGHT,
+        pageHeight,
         Math.max(
           snappedBounds.y + snappedBounds.height,
           xSnap.target.end,
@@ -161,7 +163,7 @@ export function getAlignmentSnap(
       position: ySnap.target.value,
       start: Math.max(0, Math.min(snappedBounds.x, ySnap.target.start) - 12),
       end: Math.min(
-        PROTOTYPE_PAGE_WIDTH,
+        pageWidth,
         Math.max(
           snappedBounds.x + snappedBounds.width,
           ySnap.target.end,

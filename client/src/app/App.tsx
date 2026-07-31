@@ -23,6 +23,7 @@ export default function App() {
   const [session, setSession] = useState<AuthSession | null>(null);
   const [currentProject, setCurrentProject] = useState<{ id: string; revision: number } | null>(null);
   const [savingProject, setSavingProject] = useState(false);
+  const [projectSaveState, setProjectSaveState] = useState<'unsaved' | 'saved' | 'error'>('unsaved');
   const [projectNotice, setProjectNotice] = useState<string | null>(null);
   const draftTimerRef = useRef<number | null>(null);
   const activeTool = useEditorStore((state) => state.activeTool);
@@ -42,6 +43,7 @@ export default function App() {
     if (draft) useEditorStore.getState().loadProjectDocument(draft);
 
     const unsubscribe = useEditorStore.subscribe((state) => {
+      setProjectSaveState('unsaved');
       if (draftTimerRef.current !== null) window.clearTimeout(draftTimerRef.current);
       draftTimerRef.current = window.setTimeout(() => {
         saveSessionDraft(toProjectDocument(state));
@@ -78,10 +80,12 @@ export default function App() {
         expectedRevision: currentProject?.revision,
       });
       setCurrentProject({ id: stored.id, revision: stored.revision });
+      setProjectSaveState('saved');
       setProjectNotice('Projet sauvegardé ✓');
       window.setTimeout(() => setProjectNotice(null), 2400);
       return stored;
     } catch (error) {
+      setProjectSaveState('error');
       setProjectNotice(error instanceof Error ? error.message : 'Impossible de sauvegarder le projet.');
       window.setTimeout(() => setProjectNotice(null), 3200);
       throw error;
@@ -93,6 +97,7 @@ export default function App() {
   const openStoredProject = useCallback((project: StoredProject) => {
     useEditorStore.getState().loadProjectDocument(project.document);
     setCurrentProject({ id: project.id, revision: project.revision });
+    setProjectSaveState('saved');
     setProjectNotice(`« ${project.title} » est ouvert`);
     window.setTimeout(() => setProjectNotice(null), 2400);
   }, []);
@@ -100,6 +105,7 @@ export default function App() {
   const createNewProject = useCallback(() => {
     useEditorStore.getState().createBlankProject();
     setCurrentProject(null);
+    setProjectSaveState('unsaved');
     setProjectNotice('Nouveau projet prêt');
     window.setTimeout(() => setProjectNotice(null), 2000);
   }, []);
@@ -114,6 +120,8 @@ export default function App() {
         onSignOut={() => void signOut()}
         onStartSimulation={() => setSimulationOpen(true)}
         savingProject={savingProject}
+        projectSaveState={projectSaveState}
+        hasSavedProject={Boolean(currentProject)}
       />
       <ToolRail />
       <WindowsPanel />
@@ -141,7 +149,10 @@ export default function App() {
         onOpenProject={openStoredProject}
         onSaveCurrent={saveProject}
         onDeleteProject={(projectId) => {
-          if (currentProject?.id === projectId) setCurrentProject(null);
+          if (currentProject?.id === projectId) {
+            setCurrentProject(null);
+            setProjectSaveState('unsaved');
+          }
         }}
       />
       {projectNotice && <div className="project-toast" role="status">{projectNotice}</div>}
