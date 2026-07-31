@@ -499,6 +499,51 @@
   box-shadow: 2px 2px 0 #a5a2f2;
 }
 
+.canvas-checkbox-label-editor {
+  width: 276px;
+  height: 40px;
+  border: 1.5px solid #1b1b1f;
+  border-radius: 5px 8px 5px 7px;
+  background: #fff;
+  box-shadow: 3px 3px 0 rgba(27, 27, 31, 0.24);
+  transform: rotate(-0.2deg);
+}
+
+.canvas-checkbox-label-editor input {
+  padding: 0 12px;
+  color: #34323b;
+  font-family: "Excalifont", cursive;
+  font-size: 15px;
+}
+
+.canvas-checkbox-label-editor input::placeholder { color: #92909b; }
+
+.canvas-checkbox-label-editor button {
+  width: 40px;
+  border-left: 1.5px solid #4f4bb8;
+  background: #6965db;
+  font-family: "Excalifont", cursive;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.canvas-checkbox-label-editor button:hover { background: #5b57c8; }
+
+.canvas-checkbox-label-editor .checkbox-label-skip {
+  width: 62px;
+  border-left: 1px dashed #aaa8b4;
+  color: #5f5d67;
+  background: #f8f7fa;
+  font-family: "Excalifont", cursive;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.canvas-checkbox-label-editor .checkbox-label-skip:hover {
+  color: #4f4bb8;
+  background: #eeedff;
+}
+
 @media (max-width: 900px) {
   .tool-rail { transform: translateX(-50%) rotate(-0.1deg); }
   .windows-panel { transform: none; }

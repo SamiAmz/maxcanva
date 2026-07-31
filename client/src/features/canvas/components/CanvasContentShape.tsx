@@ -266,17 +266,21 @@ export function CanvasContentShape({
           const boxY = (content.height - boxSize) / 2;
 
           context.save();
-          context.fillStyle = '#ffffff';
-          context.strokeStyle = '#9aa4b2';
-          context.lineWidth = 2;
+          context.fillStyle = '#dcdafe';
           context.beginPath();
-          context.roundRect(1, boxY, boxSize, boxSize, 5);
+          context.roundRect(3, boxY + 3, boxSize, boxSize, 4);
+          context.fill();
+          context.fillStyle = '#ffffff';
+          context.strokeStyle = '#6965db';
+          context.lineWidth = 1.6;
+          context.beginPath();
+          context.roundRect(1, boxY, boxSize, boxSize, 4);
           context.fill();
           context.stroke();
           if (content.checked) {
-            context.fillStyle = '#5b5bd6';
+            context.fillStyle = '#6965db';
             context.beginPath();
-            context.roundRect(1, boxY, boxSize, boxSize, 5);
+            context.roundRect(1, boxY, boxSize, boxSize, 4);
             context.fill();
             context.strokeStyle = '#ffffff';
             context.lineWidth = 2;
@@ -287,8 +291,8 @@ export function CanvasContentShape({
             context.stroke();
           }
           if (content.label) {
-            context.fillStyle = '#374151';
-            context.font = '500 16px Assistant, Arial, sans-serif';
+            context.fillStyle = '#34323b';
+            context.font = '400 16px Excalifont, sans-serif';
             context.textBaseline = 'middle';
             context.fillText(
               content.label,
@@ -320,8 +324,18 @@ export function CanvasContentShape({
         fill="#ffffff"
         sceneFunc={(context) => {
           context.save();
+          context.fillStyle = '#dcdafe';
+          context.beginPath();
+          context.roundRect(
+            4,
+            4,
+            Math.max(0, content.width - 4),
+            Math.max(0, content.height - 4),
+            6,
+          );
+          context.fill();
           context.fillStyle = '#ffffff';
-          context.strokeStyle = '#aeb7c4';
+          context.strokeStyle = '#6f6d78';
           context.lineWidth = 1.5;
           context.beginPath();
           context.roundRect(
@@ -329,18 +343,18 @@ export function CanvasContentShape({
             1,
             Math.max(0, content.width - 2),
             Math.max(0, content.height - 2),
-            8,
+            6,
           );
           context.fill();
           context.stroke();
-          context.fillStyle = '#98a1af';
-          context.font = '400 15px Assistant, Arial, sans-serif';
+          context.fillStyle = '#777580';
+          context.font = '400 16px Excalifont, sans-serif';
           context.textBaseline = 'middle';
           context.fillText(
             content.placeholder,
-            13,
+            14,
             content.height / 2,
-            Math.max(0, content.width - 26),
+            Math.max(0, content.width - 28),
           );
           context.restore();
         }}
