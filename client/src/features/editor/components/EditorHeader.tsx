@@ -10,6 +10,7 @@ interface EditorHeaderProps {
   onSaveProject: () => void;
   onSignOut: () => void;
   onStartSimulation: () => void;
+  onOpenAi: () => void;
   savingProject: boolean;
   projectSaveState: 'unsaved' | 'saved' | 'error';
   hasSavedProject: boolean;
@@ -22,6 +23,7 @@ export function EditorHeader({
   onSaveProject,
   onSignOut,
   onStartSimulation,
+  onOpenAi,
   savingProject,
   projectSaveState,
   hasSavedProject,
@@ -147,6 +149,11 @@ export function EditorHeader({
             </div>
           )}
         </div>
+
+        <button className="open-ai-button" type="button" onClick={onOpenAi}>
+          <span aria-hidden="true">✦</span>
+          <span className="open-ai-label">Créer avec l’IA</span>
+        </button>
 
         <button
           className="start-simulation-button"

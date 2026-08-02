@@ -23,6 +23,7 @@ function remember(
   changes: Partial<EditorState>,
 ): Partial<EditorState> {
   const snapshot: EditorSnapshot = {
+    projectTitle: state.projectTitle,
     windows: state.windows,
     activeWindowId: state.activeWindowId,
     contents: state.contents,
@@ -422,6 +423,19 @@ export const useEditorStore = create<EditorState>((set) => ({
       selectedContentIds: [],
       history: [],
       activeTool: 'pencil',
+    })),
+  applyProjectDocument: (document) =>
+    set((state) => remember(state, {
+      projectTitle: document.title,
+      windows: document.windows,
+      activeWindowId: document.windows.some(({ id }) => id === state.activeWindowId)
+        ? state.activeWindowId
+        : document.windows[0]?.id ?? state.activeWindowId,
+      contents: document.contents,
+      groups: document.groups,
+      interactions: document.interactions,
+      selectedContentIds: [],
+      activeTool: 'select',
     })),
   createBlankProject: () => {
     const id = crypto.randomUUID();

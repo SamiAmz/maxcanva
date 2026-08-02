@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { AuthSession, StoredProject } from '@maxcanva/shared';
 import { AuthDialog } from '@/features/auth/components/AuthDialog';
 import { ProjectsDialog } from '@/features/projects/components/ProjectsDialog';
+import { AiAssistantDialog } from '@/features/ai/components/AiAssistantDialog';
 import { DrawingCanvas } from '@/features/canvas/components/DrawingCanvas';
 import { DrawingControls } from '@/features/canvas/components/DrawingControls';
 import { EditorHeader } from '@/features/editor/components/EditorHeader';
@@ -20,6 +21,8 @@ export default function App() {
   const [simulationOpen, setSimulationOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [projectsOpen, setProjectsOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [openAiAfterAuth, setOpenAiAfterAuth] = useState(false);
   const [session, setSession] = useState<AuthSession | null>(null);
   const [currentProject, setCurrentProject] = useState<{ id: string; revision: number } | null>(null);
   const [savingProject, setSavingProject] = useState(false);
@@ -56,7 +59,10 @@ export default function App() {
     };
   }, []);
 
-  const closeAuth = useCallback(() => setAuthOpen(false), []);
+  const closeAuth = useCallback(() => {
+    setAuthOpen(false);
+    setOpenAiAfterAuth(false);
+  }, []);
   const signOut = useCallback(async () => {
     try {
       await authGateway.signOut();
@@ -115,11 +121,21 @@ export default function App() {
     <div className="editor-shell">
       <EditorHeader
         session={session}
-        onOpenAuth={() => setAuthOpen(true)}
+        onOpenAuth={() => {
+          setOpenAiAfterAuth(false);
+          setAuthOpen(true);
+        }}
         onOpenProjects={() => session ? setProjectsOpen(true) : setAuthOpen(true)}
         onSaveProject={() => void saveProject().catch(() => undefined)}
         onSignOut={() => void signOut()}
         onStartSimulation={() => setSimulationOpen(true)}
+        onOpenAi={() => {
+          if (session) setAiOpen(true);
+          else {
+            setOpenAiAfterAuth(true);
+            setAuthOpen(true);
+          }
+        }}
         savingProject={savingProject}
         projectSaveState={projectSaveState}
         hasSavedProject={Boolean(currentProject)}
@@ -140,7 +156,13 @@ export default function App() {
       <AuthDialog
         open={authOpen}
         onClose={closeAuth}
-        onAuthenticated={setSession}
+        onAuthenticated={(authenticatedSession) => {
+          setSession(authenticatedSession);
+          if (openAiAfterAuth) {
+            setOpenAiAfterAuth(false);
+            setAiOpen(true);
+          }
+        }}
       />
       <ProjectsDialog
         open={projectsOpen && Boolean(session)}
@@ -154,6 +176,16 @@ export default function App() {
             setCurrentProject(null);
             setProjectSaveState('unsaved');
           }
+        }}
+      />
+      <AiAssistantDialog
+        open={aiOpen && Boolean(session)}
+        projectId={currentProject?.id ?? null}
+        onClose={() => setAiOpen(false)}
+        onApplied={() => {
+          setProjectSaveState('unsaved');
+          setProjectNotice('Proposition IA appliquée — Annuler reste disponible');
+          window.setTimeout(() => setProjectNotice(null), 3200);
         }}
       />
       {projectNotice && <div className="project-toast" role="status">{projectNotice}</div>}

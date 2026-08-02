@@ -61,12 +61,14 @@ export interface EditorState {
   updateCheckboxLabel: (id: string, label: string) => void;
   undo: () => void;
   loadProjectDocument: (document: ProjectDocument) => void;
+  applyProjectDocument: (document: ProjectDocument) => void;
   createBlankProject: () => void;
 }
 
 export type EditorSnapshot = Pick<
   EditorState,
   | 'windows'
+  | 'projectTitle'
   | 'activeWindowId'
   | 'contents'
   | 'groups'

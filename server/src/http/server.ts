@@ -1,16 +1,27 @@
 import 'dotenv/config';
 import cors from 'cors';
 import express, { type NextFunction, type Request, type Response } from 'express';
+import { existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
 import { z } from 'zod';
-import type { AuthSession, ProjectDocument } from '@maxcanva/shared';
+import type { AiProposalRequest, AuthSession, ProjectDocument } from '@maxcanva/shared';
 import { AuthService, AuthServiceError } from '../modules/auth/application/authService';
 import { BcryptPasswordHasher } from '../modules/auth/infrastructure/bcryptPasswordHasher';
 import { JwtService } from '../modules/auth/infrastructure/jwtService';
 import { SupabaseUserRepository } from '../modules/auth/infrastructure/supabaseUserRepository';
 import { ProjectConflictError } from '../modules/projects/application/projectPorts';
 import { SupabaseProjectRepository } from '../modules/projects/infrastructure/supabaseProjectRepository';
+import { AiService, AiServiceError } from '../modules/ai/application/aiService';
+import { AiModelGateway, AiProviderUnavailableError } from '../modules/ai/infrastructure/aiModelGateway';
+import { SupabaseAiRunRepository } from '../modules/ai/infrastructure/supabaseAiRunRepository';
+import {
+  aiProposalRequestSchema,
+  aiReviewRequestSchema,
+  projectDocumentSchema,
+} from '../modules/ai/domain/aiSchemas';
 
 const logger = pino({ level: process.env.LOG_LEVEL ?? 'info' });
 const isProduction = process.env.NODE_ENV === 'production';
@@ -40,23 +51,23 @@ const projectRepository = new SupabaseProjectRepository(
   supabaseUrl,
   supabaseSecretKey,
 );
+const aiService = new AiService(
+  new SupabaseAiRunRepository(supabaseUrl, supabaseSecretKey),
+  new AiModelGateway(),
+);
 const app = express();
 
 app.use(pinoHttp({ logger, genReqId: (request) => request.headers['x-request-id']?.toString() ?? crypto.randomUUID() }));
 app.use(cors({ origin: process.env.CLIENT_ORIGIN ?? 'http://localhost:5173', credentials: true }));
-app.use(express.json({ limit: '32kb' }));
+app.use(express.json({ limit: '3mb' }));
 
 const credentialsSchema = z.object({
   email: z.string().trim().email('Adresse courriel invalide.').max(254),
   password: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères.').max(72),
 });
-const projectDocumentSchema = z.object({
-  schemaVersion: z.literal(1),
-  title: z.string().trim().min(1).max(120),
-  windows: z.array(z.object({ id: z.string().min(1), name: z.string().min(1).max(120) })).min(1),
-  contents: z.array(z.record(z.string(), z.unknown())),
-  groups: z.array(z.record(z.string(), z.unknown())),
-  interactions: z.array(z.record(z.string(), z.unknown())),
+
+app.get('/api/health', (_request, response) => {
+  response.json({ status: 'ok', aiConfigured: Boolean(process.env.GOOGLE_API_KEY || process.env.OPENROUTER_API_KEY) });
 });
 
 app.post('/api/auth/register', asyncRoute(async (request, response) => {
@@ -138,13 +149,80 @@ app.delete('/api/projects/:id', asyncRoute(async (request, response) => {
   response.status(204).end();
 }));
 
+app.post('/api/ai/proposals', asyncRoute(async (request, response) => {
+  const ownerId = requireUserId(request);
+  const input = aiProposalRequestSchema.parse(request.body) as AiProposalRequest;
+  if (input.projectId && !(await projectRepository.findById(ownerId, input.projectId))) {
+    return response.status(404).json(publicError('PROJECT_NOT_FOUND', 'Projet introuvable.', String(request.id)));
+  }
+  const proposal = await aiService.create(ownerId, input);
+  request.log.info({ event: 'ai.proposal_created', userId: ownerId, runId: proposal.runId, provider: proposal.provider, model: proposal.model }, 'AI proposal created');
+  response.status(201).json(proposal);
+}));
+
+app.get('/api/ai/proposals/:id', asyncRoute(async (request, response) => {
+  const ownerId = requireUserId(request);
+  const runId = z.string().uuid().parse(request.params.id);
+  response.json(await aiService.get(ownerId, runId));
+}));
+
+app.post('/api/ai/proposals/:id/review', asyncRoute(async (request, response) => {
+  const ownerId = requireUserId(request);
+  const runId = z.string().uuid().parse(request.params.id);
+  const input = aiReviewRequestSchema.parse(request.body);
+  const proposal = await aiService.review(ownerId, runId, input);
+  request.log.info({ event: 'ai.visual_review_completed', userId: ownerId, runId, verdict: proposal.visualReview?.verdict }, 'AI visual review completed');
+  response.json(proposal);
+}));
+
+app.post('/api/ai/proposals/:id/approve', asyncRoute(async (request, response) => {
+  const ownerId = requireUserId(request);
+  const runId = z.string().uuid().parse(request.params.id);
+  const result = await aiService.approve(ownerId, runId);
+  request.log.info({ event: 'ai.proposal_approved', userId: ownerId, runId }, 'AI proposal approved');
+  response.json(result);
+}));
+
+app.post('/api/ai/proposals/:id/reject', asyncRoute(async (request, response) => {
+  const ownerId = requireUserId(request);
+  const runId = z.string().uuid().parse(request.params.id);
+  await aiService.reject(ownerId, runId);
+  request.log.info({ event: 'ai.proposal_rejected', userId: ownerId, runId }, 'AI proposal rejected');
+  response.status(204).end();
+}));
+
+if (isProduction) {
+  const clientDist = join(dirname(fileURLToPath(import.meta.url)), '../../../client/dist');
+  if (existsSync(clientDist)) {
+    app.use(express.static(clientDist));
+    app.use((request, response, next) => {
+      if (request.path.startsWith('/api/')) return next();
+      return response.sendFile(join(clientDist, 'index.html'));
+    });
+  } else {
+    logger.warn({ event: 'server.client_dist_missing', clientDist }, 'Client bundle is not available');
+  }
+}
+
 app.use((error: unknown, request: Request, response: Response, _next: NextFunction) => {
   if (error instanceof z.ZodError) {
-    request.log.warn({ event: 'auth.validation_failed', issues: error.issues.map(({ path, code }) => ({ path, code })) }, 'Invalid auth input');
+    request.log.warn({ event: 'request.validation_failed', issues: error.issues.map(({ path, code }) => ({ path, code })) }, 'Invalid request input');
     return response.status(400).json(publicError('VALIDATION_ERROR', error.issues[0]?.message ?? 'Données invalides.', String(request.id)));
   }
   if (error instanceof AuthServiceError) {
     request.log.warn({ event: 'auth.request_failed', code: error.code, reason: error.reason }, 'Authentication request failed');
+    return response.status(error.status).json(publicError(error.code, error.message, String(request.id)));
+  }
+  if (error instanceof AiServiceError) {
+    request.log.warn({
+      event: 'ai.request_failed',
+      code: error.code,
+      providerFailures:
+        error.cause instanceof AiProviderUnavailableError
+          ? error.cause.failures
+          : undefined,
+      err: error.cause,
+    }, 'AI request failed');
     return response.status(error.status).json(publicError(error.code, error.message, String(request.id)));
   }
   if (error instanceof ProjectConflictError) {
