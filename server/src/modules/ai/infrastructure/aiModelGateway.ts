@@ -97,7 +97,7 @@ export class AiModelGateway {
       configuration: {
         baseURL: 'https://openrouter.ai/api/v1',
         defaultHeaders: {
-          'HTTP-Referer': process.env.PUBLIC_APP_URL ?? 'http://localhost:5173',
+          'HTTP-Referer': process.env.CLIENT_ORIGIN ?? 'http://localhost:5173',
           'X-Title': 'MaxCanva',
         },
       },

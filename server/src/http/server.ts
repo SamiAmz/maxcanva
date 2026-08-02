@@ -1,9 +1,6 @@
 import 'dotenv/config';
 import cors from 'cors';
 import express, { type NextFunction, type Request, type Response } from 'express';
-import { existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
 import { z } from 'zod';
@@ -64,10 +61,6 @@ app.use(express.json({ limit: '3mb' }));
 const credentialsSchema = z.object({
   email: z.string().trim().email('Adresse courriel invalide.').max(254),
   password: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères.').max(72),
-});
-
-app.get('/api/health', (_request, response) => {
-  response.json({ status: 'ok', aiConfigured: Boolean(process.env.GOOGLE_API_KEY || process.env.OPENROUTER_API_KEY) });
 });
 
 app.post('/api/auth/register', asyncRoute(async (request, response) => {
@@ -190,19 +183,6 @@ app.post('/api/ai/proposals/:id/reject', asyncRoute(async (request, response) =>
   request.log.info({ event: 'ai.proposal_rejected', userId: ownerId, runId }, 'AI proposal rejected');
   response.status(204).end();
 }));
-
-if (isProduction) {
-  const clientDist = join(dirname(fileURLToPath(import.meta.url)), '../../../client/dist');
-  if (existsSync(clientDist)) {
-    app.use(express.static(clientDist));
-    app.use((request, response, next) => {
-      if (request.path.startsWith('/api/')) return next();
-      return response.sendFile(join(clientDist, 'index.html'));
-    });
-  } else {
-    logger.warn({ event: 'server.client_dist_missing', clientDist }, 'Client bundle is not available');
-  }
-}
 
 app.use((error: unknown, request: Request, response: Response, _next: NextFunction) => {
   if (error instanceof z.ZodError) {

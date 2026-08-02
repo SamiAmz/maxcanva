@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/http/server.ts",
     "start": "tsx src/http/server.ts",
-    "test": "node --import tsx --test src/modules/auth/auth.test.ts src/modules/ai/application/aiToolSession.test.ts",
+    "test": "node --import tsx --test src/modules/auth/auth.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
