@@ -47,7 +47,7 @@
   border-radius: 6px;
   color: #5f5f67;
   background: transparent;
-  font-family: Arial, sans-serif;
+
   font-size: 25px;
   line-height: 1;
   cursor: pointer;
@@ -60,7 +60,7 @@
   align-items: center;
   gap: 10px;
   color: #6965db;
-  font-family: "Excalifont", cursive;
+
   font-size: 18px;
 }
 
@@ -69,7 +69,7 @@
   top: 72px;
   right: 42px;
   color: #f08c46;
-  font-family: "Excalifont", cursive;
+
   font-size: 22px;
   transform: rotate(12deg);
 }
@@ -77,7 +77,7 @@
 .auth-dialog h2 {
   margin: 24px 0 0;
   color: #1b1b1f;
-  font-family: "Excalifont", cursive;
+
   font-size: 30px;
   font-weight: 400;
   line-height: 1.1;
@@ -162,7 +162,7 @@
   place-items: center;
   border: 1.5px solid currentColor;
   border-radius: 50% 46% 52% 44%;
-  font-family: "Excalifont", cursive;
+
   font-size: 15px;
 }
 
@@ -172,7 +172,7 @@
 }
 
 .auth-error strong {
-  font-family: "Excalifont", cursive;
+
   font-size: 14px;
   font-weight: 400;
 }
@@ -184,7 +184,7 @@
   border: 0;
   color: #8e1f27;
   background: transparent;
-  font-family: "Excalifont", cursive;
+
   font-size: 13px;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -199,7 +199,7 @@
   color: #fff;
   background: #6965db;
   box-shadow: 3px 3px 0 #35327c;
-  font-family: "Excalifont", cursive;
+
   font-size: 16px;
   cursor: pointer;
   transform: rotate(-0.12deg);
@@ -231,7 +231,7 @@
   border: 0;
   color: #6965db;
   background: transparent;
-  font-family: "Excalifont", cursive;
+
   font-size: 14px;
   text-decoration: underline;
   text-decoration-thickness: 1px;
@@ -263,7 +263,7 @@
   border-radius: 5px 7px 4px 6px;
   color: #514dc1;
   background: #eeedff;
-  font-family: "Excalifont", cursive;
+
   font-size: 14px;
   transform: rotate(-2deg);
 }

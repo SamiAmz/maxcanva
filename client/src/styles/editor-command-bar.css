@@ -39,7 +39,7 @@
   min-width: 92px;
   padding: 0 11px;
   border-radius: 6px 9px 5px 8px;
-  font-family: "Excalifont", cursive;
+
   font-size: 13px;
 }
 
@@ -80,7 +80,7 @@
   border-radius: 7px 5px 8px 5px;
   color: #514dc1;
   background: #eeedff;
-  font-family: "Excalifont", cursive;
+
   font-size: 15px;
   transform: rotate(-1deg);
 }
@@ -136,7 +136,7 @@
 
 .popover-project-summary strong {
   overflow: hidden;
-  font-family: "Excalifont", cursive;
+
   font-size: 16px;
   font-weight: 400;
   text-overflow: ellipsis;
@@ -176,7 +176,7 @@
   place-items: center;
   border: 1px solid #aaa8b4;
   border-radius: 4px 6px 3px 5px;
-  font-family: "Excalifont", cursive;
+
   font-size: 17px;
 }
 
@@ -202,7 +202,7 @@
 .account-popover-identity > span:last-child { display: grid; min-width: 0; gap: 2px; }
 .account-popover-identity small { color: #817f89; font-size: 9px; }
 .account-popover-identity strong { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
-.editor-popover > .popover-sign-out { margin-top: 6px; color: #7b4242; font-family: "Excalifont", cursive; }
+.editor-popover > .popover-sign-out { margin-top: 6px; color: #7b4242; }
 
 .toolbar-undo-button svg {
   width: 20px;
@@ -246,7 +246,7 @@
 
 .dialog-eyebrow {
   color: #6965db;
-  font-family: "Excalifont", cursive;
+
   font-size: 13px;
   font-weight: 400;
 }
@@ -254,7 +254,7 @@
 .interaction-dialog h2 {
   margin-top: 5px;
   color: #1b1b1f;
-  font-family: "Excalifont", cursive;
+
   font-size: 27px;
   font-weight: 400;
   letter-spacing: 0;
@@ -300,7 +300,7 @@
 .target-url-field > span {
   margin-bottom: 9px;
   color: #3f3d47;
-  font-family: "Excalifont", cursive;
+
   font-size: 14px;
   font-weight: 400;
 }
@@ -352,7 +352,7 @@
 
 .interaction-type-card strong {
   color: #29282f;
-  font-family: "Excalifont", cursive;
+
   font-size: 16px;
   font-weight: 400;
 }
@@ -400,7 +400,7 @@
   padding: 0 17px;
   border: 1.5px solid #1b1b1f;
   border-radius: 5px 8px 5px 7px;
-  font-family: "Excalifont", cursive;
+
   font-size: 14px;
   font-weight: 400;
 }
@@ -448,7 +448,7 @@
 
 .layering-label {
   color: #5f5d67;
-  font-family: "Excalifont", cursive;
+
   font-size: 11px;
   font-weight: 400;
   letter-spacing: 0;
@@ -488,7 +488,7 @@
   padding: 0 15px;
   border-width: 1.5px;
   border-radius: 5px 8px 5px 7px;
-  font-family: "Excalifont", cursive;
+
   font-size: 14px;
   font-weight: 400;
 }
@@ -1001,7 +1001,7 @@
 
   .simulation-back-button::before {
     content: "←";
-    font-family: Arial, sans-serif;
+
     font-size: 21px;
   }
 

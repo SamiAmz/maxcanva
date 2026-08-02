@@ -329,7 +329,7 @@
   align-items: center;
   overflow: hidden;
   color: #374151;
-  font-family: "Assistant", Arial, sans-serif;
+
   font-weight: 500;
   cursor: pointer;
   user-select: none;
@@ -353,7 +353,7 @@
   outline: 0;
   color: #273247;
   background: #fff;
-  font-family: "Assistant", Arial, sans-serif;
+
 }
 
 .simulation-text-input-widget::placeholder {

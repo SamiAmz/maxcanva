@@ -13,7 +13,7 @@
 }
 
 .editor-header {
-  font-family: "Assistant", system-ui, sans-serif;
+
 }
 
 .document-title,
@@ -33,7 +33,7 @@
 }
 
 .project-title-input {
-  font-family: "Excalifont", cursive;
+
   font-size: 15px;
   font-weight: 400;
 }
@@ -55,7 +55,7 @@
   border-radius: 5px 7px 4px 6px;
   background: var(--sketch-purple);
   box-shadow: 2px 2px 0 #35327c;
-  font-family: "Excalifont", cursive;
+
   font-size: 14px;
   font-weight: 400;
 }
@@ -69,7 +69,7 @@
 .start-simulation-button:active { transform: translate(2px, 2px); box-shadow: none; }
 
 .open-auth-button {
-  font-family: "Excalifont", cursive;
+
   font-size: 13px;
   font-weight: 400;
 }
@@ -99,7 +99,7 @@
 }
 
 .tool-button:nth-of-type(even).is-active { transform: rotate(1deg); }
-.tool-shortcut { font-family: "Excalifont", cursive; }
+.tool-shortcut { }
 
 .tool-rail-divider {
   width: 1px;
@@ -127,7 +127,7 @@
 }
 
 .windows-panel-header h2 {
-  font-family: "Excalifont", cursive;
+
   font-size: 17px;
   font-weight: 400;
 }
@@ -135,7 +135,7 @@
 .windows-panel-header div > span {
   border: 1px solid #d2d0dd;
   border-radius: 50% 45% 52% 43%;
-  font-family: "Excalifont", cursive;
+
   background: #fff;
 }
 
@@ -145,7 +145,7 @@
   color: var(--sketch-purple-dark);
   background: var(--sketch-purple-soft);
   box-shadow: 2px 2px 0 #a5a2f2;
-  font-family: "Excalifont", cursive;
+
 }
 
 .add-window-button:hover {
@@ -182,12 +182,12 @@
 .window-number {
   border: 1px solid #c5c3ce;
   border-radius: 4px 6px 3px 5px;
-  font-family: "Excalifont", cursive;
+
   background: #fff;
 }
 
 .window-name-input {
-  font-family: "Excalifont", cursive;
+
   font-size: 13px;
   font-weight: 400;
 }
@@ -214,7 +214,7 @@
 .canvas-hint {
   gap: 9px;
   color: #6965db;
-  font-family: "Excalifont", cursive;
+
   font-size: 20px;
   font-weight: 400;
   transform: rotate(-1deg);
@@ -253,7 +253,7 @@
 .shape-style-label,
 .selection-summary,
 .button-label {
-  font-family: "Excalifont", cursive;
+
   font-weight: 400;
 }
 
@@ -326,7 +326,7 @@
 
 .simulation-title strong {
   color: #fff;
-  font-family: "Excalifont", cursive;
+
   font-size: 17px;
   font-weight: 400;
 }
@@ -356,7 +356,7 @@
 .close-simulation-button {
   height: 34px;
   border-radius: 4px 7px 4px 6px;
-  font-family: "Excalifont", cursive;
+
   font-size: 13px;
   font-weight: 400;
 }
@@ -392,7 +392,7 @@
 .close-simulation-button span {
   border-radius: 3px 5px 3px 4px;
   background: rgba(255, 255, 255, 0.13);
-  font-family: Arial, sans-serif;
+
 }
 
 .simulation-workspace {
@@ -406,7 +406,7 @@
 .simulation-workspace::after {
   position: absolute;
   color: #6965db;
-  font-family: "Excalifont", cursive;
+
   pointer-events: none;
 }
 
@@ -445,13 +445,13 @@
 
 .simulation-empty-state {
   color: #8b8994;
-  font-family: "Excalifont", cursive;
+
   font-size: 18px;
 }
 
 .simulation-text-input-widget {
   border: 1.5px solid #777680;
-  font-family: "Assistant", system-ui, sans-serif;
+
 }
 
 .simulation-text-input-widget:focus {
@@ -473,7 +473,7 @@
 .canvas-checkbox-label-editor input {
   padding: 0 12px;
   color: #34323b;
-  font-family: "Excalifont", cursive;
+
   font-size: 15px;
 }
 
@@ -483,7 +483,7 @@
   width: 40px;
   border-left: 1.5px solid #4f4bb8;
   background: #6965db;
-  font-family: "Excalifont", cursive;
+
   font-size: 16px;
   font-weight: 400;
 }
@@ -495,7 +495,7 @@
   border-left: 1px dashed #aaa8b4;
   color: #5f5d67;
   background: #f8f7fa;
-  font-family: "Excalifont", cursive;
+
   font-size: 12px;
   font-weight: 400;
 }

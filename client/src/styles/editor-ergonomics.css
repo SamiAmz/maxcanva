@@ -333,7 +333,7 @@
   color: var(--ui-text);
   background: transparent;
   caret-color: var(--ui-primary);
-  font-family: "Excalifont", sans-serif;
+
   font-size: 28px;
   line-height: 38px;
 }

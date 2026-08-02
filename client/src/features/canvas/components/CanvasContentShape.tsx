@@ -18,6 +18,7 @@ interface CanvasContentShapeProps {
 }
 
 const roughGenerator = rough.generator();
+const CANVAS_FONT_FAMILY = 'Excalifont, cursive';
 
 function seedFromId(id: string) {
   let seed = 0;
@@ -292,7 +293,7 @@ export function CanvasContentShape({
           }
           if (content.label) {
             context.fillStyle = '#34323b';
-            context.font = '400 16px Excalifont, sans-serif';
+            context.font = `400 16px ${CANVAS_FONT_FAMILY}`;
             context.textBaseline = 'middle';
             context.fillText(
               content.label,
@@ -348,7 +349,7 @@ export function CanvasContentShape({
           context.fill();
           context.stroke();
           context.fillStyle = '#777580';
-          context.font = '400 16px Excalifont, sans-serif';
+          context.font = `400 16px ${CANVAS_FONT_FAMILY}`;
           context.textBaseline = 'middle';
           context.fillText(
             content.placeholder,
@@ -377,7 +378,7 @@ export function CanvasContentShape({
       fill={content.color}
       opacity={content.opacity}
       fontSize={content.fontSize}
-      fontFamily="Excalifont, sans-serif"
+      fontFamily={CANVAS_FONT_FAMILY}
       hitStrokeWidth={8}
     />
   );

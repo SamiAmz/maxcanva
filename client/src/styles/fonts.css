@@ -1,36 +1,4 @@
 @font-face {
-  font-family: "Assistant";
-  src: url("../assets/fonts/assistant/Assistant-Regular.woff2") format("woff2");
-  font-display: swap;
-  font-style: normal;
-  font-weight: 400;
-}
-
-@font-face {
-  font-family: "Assistant";
-  src: url("../assets/fonts/assistant/Assistant-Medium.woff2") format("woff2");
-  font-display: swap;
-  font-style: normal;
-  font-weight: 500;
-}
-
-@font-face {
-  font-family: "Assistant";
-  src: url("../assets/fonts/assistant/Assistant-SemiBold.woff2") format("woff2");
-  font-display: swap;
-  font-style: normal;
-  font-weight: 600;
-}
-
-@font-face {
-  font-family: "Assistant";
-  src: url("../assets/fonts/assistant/Assistant-Bold.woff2") format("woff2");
-  font-display: swap;
-  font-style: normal;
-  font-weight: 700;
-}
-
-@font-face {
   font-family: "Excalifont";
   src: url("../assets/fonts/excalifont/Excalifont-Regular-a88b72a24fb54c9f94e3b5fdaa7481c9.woff2")
     format("woff2");
@@ -114,9 +82,8 @@
 }
 
 :root {
-  font-family:
-    "Assistant", system-ui, BlinkMacSystemFont, -apple-system, "Segoe UI",
-    sans-serif;
+  --app-font: "Excalifont", cursive;
+  font-family: var(--app-font);
   color: #172033;
   background: #f3f5f8;
   font-synthesis: none;
@@ -137,7 +104,9 @@ body,
 }
 
 button,
-input {
+input,
+textarea,
+select {
   font: inherit;
 }
 
