@@ -230,19 +230,19 @@ export class AiToolSession {
     tool(async ({ url }) => {
       const selected = this.draft.contents.filter(({ id }) => this.context.selectedContentIds.includes(id));
       if (selected.length === 0) throw new Error('Aucun contenu n’est sélectionné pour recevoir le lien.');
-      const sourceWindowId = selected[0]!.windowId;
-      return this.commit({
-        type: 'create-interaction',
-        interaction: {
-          id: this.id('interaction'), sourceWindowId, url,
-          contentIds: selected.filter(({ windowId }) => windowId === sourceWindowId).map(({ id }) => id),
-          type: 'link',
-        },
-      });
+      return this.makeContentsExternalLink(selected.map(({ id }) => id), url);
     }, {
       name: 'make_selection_external_link',
       description: 'Transforme exactement la sélection actuelle en hyperlien vers une URL externe. Ne sert pas à naviguer entre les fenêtres.',
-      schema: z.object({ url: z.string().url().max(2048) }),
+      schema: z.object({ url: z.string().min(1).max(2048) }),
+    }),
+    tool(async ({ contentIds, url }) => this.makeContentsExternalLink(contentIds, url), {
+      name: 'make_contents_external_link',
+      description: 'Ajoute une URL externe à des contenus précis, y compris ceux créés pendant cette demande. Utilise les identifiants retournés dans createdContentIds.',
+      schema: z.object({
+        contentIds: z.array(z.string().min(1)).min(1).max(80),
+        url: z.string().min(1).max(2048),
+      }),
     }),
     tool(async ({ interactionId }) => this.commit({ type: 'delete-interaction', interactionId }), {
       name: 'remove_interaction',
@@ -269,6 +269,27 @@ export class AiToolSession {
     });
   }
 
+  makeContentsExternalLink(contentIds: string[], url: string) {
+    const contents = this.draft.contents.filter(({ id }) => contentIds.includes(id));
+    if (contents.length !== new Set(contentIds).size) {
+      throw new Error('Un ou plusieurs contenus du lien n’existent pas dans le brouillon.');
+    }
+    const sourceWindowId = contents[0]?.windowId;
+    if (!sourceWindowId || contents.some(({ windowId }) => windowId !== sourceWindowId)) {
+      throw new Error('Tous les contenus d’un lien doivent appartenir à la même fenêtre.');
+    }
+    return this.commit({
+      type: 'create-interaction',
+      interaction: {
+        id: this.id('interaction'),
+        sourceWindowId,
+        url: normalizeExternalUrl(url),
+        contentIds: [...new Set(contentIds)],
+        type: 'link',
+      },
+    });
+  }
+
   private addContent(content: CanvasContent) {
     return this.commit({ type: 'add-content', content });
   }
@@ -280,7 +301,12 @@ export class AiToolSession {
   private commitMany(commands: AiEditCommand[]) {
     this.draft = applyAiCommands(this.draft, commands);
     this.commands.push(...commands);
-    return this.json({ ok: true, applied: commands.map(({ type }) => type), commandCount: this.commands.length });
+    return this.json({
+      ok: true,
+      applied: commands.map(({ type }) => type),
+      createdContentIds: commands.flatMap((command) => command.type === 'add-content' ? [command.content.id] : []),
+      commandCount: this.commands.length,
+    });
   }
 
   private requireContent(contentId: string) {
@@ -296,6 +322,15 @@ export class AiToolSession {
   private json(value: unknown) {
     return JSON.stringify(value);
   }
+}
+
+function normalizeExternalUrl(value: string) {
+  const candidate = /^https?:\/\//i.test(value.trim()) ? value.trim() : `https://${value.trim()}`;
+  const url = new URL(candidate);
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    throw new Error('Le lien doit utiliser HTTP ou HTTPS.');
+  }
+  return url.toString();
 }
 
 function moveAndResize(

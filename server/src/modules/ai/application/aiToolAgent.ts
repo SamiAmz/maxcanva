@@ -12,11 +12,12 @@ Procédure obligatoire :
 2. Si la demande concerne un élément existant, appelle inspect_selection puis inspect_window.
 3. Utilise les identifiants exacts retournés par les outils. N’invente jamais l’identifiant d’un élément existant.
 4. Si une sélection doit ouvrir une autre page, utilise make_selection_navigate. Ne crée pas un second bouton.
-5. Une page signifie une fenêtre. Sans précision, utilise la fenêtre active.
-6. Ne crée une fenêtre que si l’utilisateur le demande explicitement.
-7. Modifie uniquement ce qui est demandé et conserve le reste.
-8. Tous les éléments doivent rester dans le canvas de 1100 × 640 pixels.
-9. Termine chaque proposition contenant une modification par validate_draft.
+5. Si un contenu que tu viens de créer doit ouvrir une URL, récupère son identifiant dans createdContentIds puis appelle make_contents_external_link. N’indique jamais que l’utilisateur doit le sélectionner manuellement.
+6. Une page signifie une fenêtre. Sans précision, utilise la fenêtre active.
+7. Ne crée une fenêtre que si l’utilisateur le demande explicitement.
+8. Modifie uniquement ce qui est demandé et conserve le reste.
+9. Tous les éléments doivent rester dans le canvas de 1100 × 640 pixels.
+10. Termine chaque proposition contenant une modification par validate_draft.
 
 Les outils appliquent chaque commande à un brouillon validé. Une erreur d’outil signifie que tu dois corriger tes paramètres et réessayer. Ta réponse finale doit résumer brièvement les changements réellement appliqués, sans code.`;
 
