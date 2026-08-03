@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { KonvaEventObject } from 'konva/lib/Node';
+import type { KonvaEventObject, Node as KonvaNode } from 'konva/lib/Node';
 import type { Shape as KonvaShape } from 'konva/lib/Shape';
 import type { Transformer as KonvaTransformer } from 'konva/lib/shapes/Transformer';
 import { Circle, Layer, Line, Rect, Stage, Transformer } from 'react-konva';
-import { PROTOTYPE_PAGE_HEIGHT, PROTOTYPE_PAGE_WIDTH } from '@maxcanva/shared';
+import {
+  PROTOTYPE_PAGE_HEIGHT,
+  PROTOTYPE_PAGE_WIDTH,
+  type CanvasContent,
+} from '@maxcanva/shared';
 import { useEditorStore } from '@/features/editor/store/useEditorStore';
 import { usePencilDrawing } from '../hooks/usePencilDrawing';
 import { InteractionOverlay } from '@/features/interactions/components/InteractionOverlay';
@@ -56,6 +60,70 @@ interface DragTransaction {
   positions: Map<string, { x: number; y: number }>;
   pointerStart: { x: number; y: number };
   lastDelta: { x: number; y: number };
+}
+
+function getSelectionBounds(box: SelectionBox) {
+  const left = Math.min(box.startX, box.currentX);
+  const right = Math.max(box.startX, box.currentX);
+  const top = Math.min(box.startY, box.currentY);
+  const bottom = Math.max(box.startY, box.currentY);
+  return {
+    left,
+    right,
+    top,
+    bottom,
+    width: right - left,
+    height: bottom - top,
+  };
+}
+
+function intersectsSelection(
+  content: CanvasContent,
+  selection: ReturnType<typeof getSelectionBounds>,
+) {
+  const bounds = getContentBounds(content);
+  return !(
+    bounds.x + bounds.width < selection.left ||
+    bounds.x > selection.right ||
+    bounds.y + bounds.height < selection.top ||
+    bounds.y > selection.bottom
+  );
+}
+
+function getTransformerNodes(
+  selectedIds: string[],
+  nodesById: Map<string, KonvaShape>,
+) {
+  return selectedIds
+    .map((id) => nodesById.get(id))
+    .filter((node): node is KonvaShape => Boolean(node));
+}
+
+function readNodeTransforms(nodes: KonvaNode[]) {
+  return nodes
+    .map((node) => ({
+      id: node.id(),
+      x: node.x(),
+      y: node.y(),
+      scaleX: node.scaleX(),
+      scaleY: node.scaleY(),
+    }))
+    .filter(
+      ({ x, y, scaleX, scaleY }) =>
+        Number.isFinite(x) &&
+        Number.isFinite(y) &&
+        Number.isFinite(scaleX) &&
+        Number.isFinite(scaleY),
+    );
+}
+
+function keepsMinimumSize<T extends { width: number; height: number }>(
+  previousBox: T,
+  nextBox: T,
+): T {
+  return Math.abs(nextBox.width) < 16 || Math.abs(nextBox.height) < 16
+    ? previousBox
+    : nextBox;
 }
 
 // Surface principale: elle distribue les gestes à l'outil actuellement actif.
@@ -338,23 +406,12 @@ export function DrawingCanvas() {
 
     if (finishShape() || !selectionBox) return;
 
-    const left = Math.min(selectionBox.startX, selectionBox.currentX);
-    const right = Math.max(selectionBox.startX, selectionBox.currentX);
-    const top = Math.min(selectionBox.startY, selectionBox.currentY);
-    const bottom = Math.max(selectionBox.startY, selectionBox.currentY);
+    const selection = getSelectionBounds(selectionBox);
 
     // Un petit clic désélectionne; un vrai rectangle cherche les contenus croisés.
-    if (right - left > 3 || bottom - top > 3) {
+    if (selection.width > 3 || selection.height > 3) {
       const ids = contents
-        .filter((content) => {
-          const bounds = getContentBounds(content);
-          return !(
-            bounds.x + bounds.width < left ||
-            bounds.x > right ||
-            bounds.y + bounds.height < top ||
-            bounds.y > bottom
-          );
-        })
+        .filter((content) => intersectsSelection(content, selection))
         .map((content) => content.id);
 
       setSelection(ids, selectionBox.additive);
@@ -462,21 +519,7 @@ export function DrawingCanvas() {
   const saveResizedContents = () => {
     const transformer = transformerRef.current;
     const nodes = transformer?.nodes() ?? [];
-    const transforms = nodes
-      .map((node) => ({
-        id: node.id(),
-        x: node.x(),
-        y: node.y(),
-        scaleX: node.scaleX(),
-        scaleY: node.scaleY(),
-      }))
-      .filter(
-        ({ x, y, scaleX, scaleY }) =>
-          Number.isFinite(x) &&
-          Number.isFinite(y) &&
-          Number.isFinite(scaleX) &&
-          Number.isFinite(scaleY),
-      );
+    const transforms = readNodeTransforms(nodes);
 
     // Détacher d'abord le cadre évite qu'il recalcule sa géométrie pendant
     // la normalisation successive des nœuds sélectionnés.
@@ -585,12 +628,9 @@ export function DrawingCanvas() {
     const transformer = transformerRef.current;
     if (!transformer) return;
 
-    const nodes =
-      activeTool === 'select'
-        ? selectedContentIds
-            .map((id) => contentNodesRef.current.get(id))
-            .filter((node): node is KonvaShape => Boolean(node))
-        : [];
+    const nodes = activeTool === 'select'
+      ? getTransformerNodes(selectedContentIds, contentNodesRef.current)
+      : [];
 
     transformer.nodes(nodes);
     transformer.getLayer()?.batchDraw();
@@ -864,12 +904,7 @@ export function DrawingCanvas() {
                 anchorCornerRadius={3 / scale}
                 padding={5 / scale}
                 ignoreStroke
-                boundBoxFunc={(oldBox, newBox) =>
-                  Math.abs(newBox.width) < 16 ||
-                  Math.abs(newBox.height) < 16
-                    ? oldBox
-                    : newBox
-                }
+                boundBoxFunc={keepsMinimumSize}
                 onTransformStart={() => {
                   resizePositionsRef.current.clear();
                   transformerRef.current?.nodes().forEach((node) => {

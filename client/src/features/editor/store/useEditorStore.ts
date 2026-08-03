@@ -18,11 +18,8 @@ const INITIAL_WINDOW: PrototypeWindow = {
 
 const HISTORY_LIMIT = 50;
 
-function remember(
-  state: EditorState,
-  changes: Partial<EditorState>,
-): Partial<EditorState> {
-  const snapshot: EditorSnapshot = {
+function createSnapshot(state: EditorState): EditorSnapshot {
+  return {
     projectTitle: state.projectTitle,
     windows: state.windows,
     activeWindowId: state.activeWindowId,
@@ -30,10 +27,28 @@ function remember(
     groups: state.groups,
     interactions: state.interactions,
   };
+}
 
+function remember(
+  state: EditorState,
+  changes: Partial<EditorState>,
+): Partial<EditorState> {
   return {
     ...changes,
-    history: [...state.history, snapshot].slice(-HISTORY_LIMIT),
+    history: [...state.history, createSnapshot(state)].slice(-HISTORY_LIMIT),
+  };
+}
+
+function restorePreviousSnapshot(
+  state: EditorState,
+): Partial<EditorState> | EditorState {
+  const previous = state.history.at(-1);
+  if (!previous) return state;
+
+  return {
+    ...previous,
+    history: state.history.slice(0, -1),
+    selectedContentIds: [],
   };
 }
 
@@ -401,17 +416,7 @@ export const useEditorStore = create<EditorState>((set) => ({
         ),
       });
     }),
-  undo: () =>
-    set((state) => {
-      const previous = state.history.at(-1);
-      if (!previous) return state;
-
-      return {
-        ...previous,
-        history: state.history.slice(0, -1),
-        selectedContentIds: [],
-      };
-    }),
+  undo: () => set(restorePreviousSnapshot),
   loadProjectDocument: (document) =>
     set((state) => ({
       projectTitle: document.title,
