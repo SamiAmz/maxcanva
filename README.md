@@ -2,12 +2,13 @@
 
 An interactive, sketch-style editor for creating and testing multi-screen UI prototypes.
 
-## 🎬 Demo
+## Demo
 
 <p align="center">
-  <a href="./demo/maxcanva-demo-github.mp4">
-    <img src="./demo/maxcanva-demo-cover.png" alt="Watch the MaxCanva software demo" width="800">
-  </a>
+  <video width="800" controls>
+    <source src="./demo/maxcanva-demo-github.mp4" type="video/mp4">
+    Votre navigateur ne supporte pas la lecture vidéo.
+  </video>
 </p>
 
 ## Run locally
