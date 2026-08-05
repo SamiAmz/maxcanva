@@ -4,11 +4,11 @@ An interactive, sketch-style editor for creating and testing multi-screen UI pro
 
 ## 🎬 Demo
 
-<video src="./demo/maxcanva-demo.mp4" controls width="100%">
-  Your Markdown viewer does not support embedded videos.
-</video>
-
-### [▶ Watch the full software demo](./demo/maxcanva-demo.mp4)
+<p align="center">
+  <a href="./demo/maxcanva-demo-github.mp4">
+    <img src="./demo/maxcanva-demo-cover.png" alt="Watch the MaxCanva software demo" width="800">
+  </a>
+</p>
 
 ## Run locally
 
